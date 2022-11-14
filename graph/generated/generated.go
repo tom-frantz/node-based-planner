@@ -74,8 +74,19 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CampaignNodeCreate func(childComplexity int, input model.NewCampaignNode) int
-		UserRegister       func(childComplexity int, input model.NewUserInput) int
+		CampaignChangeOwner  func(childComplexity int, id string, newOwner string) int
+		CampaignCreate       func(childComplexity int, input *model.CampaignInput) int
+		CampaignDelete       func(childComplexity int, id string) int
+		CampaignNodeCreate   func(childComplexity int, input *model.CampaignNodeInput) int
+		CampaignNodeDelete   func(childComplexity int, id string) int
+		CampaignNodeUpdate   func(childComplexity int, id string, input *model.CampaignNodeInput) int
+		CampaignRegisterUser func(childComplexity int, id string, userID string, playerType model.PlayerType) int
+		CampaignRemoveUser   func(childComplexity int, id string, userID string) int
+		CampaignUpdate       func(childComplexity int, id string, input *model.CampaignInput) int
+		TransitionCreate     func(childComplexity int, input *model.TransitionInput) int
+		TransitionDelete     func(childComplexity int, id string) int
+		TransitionUpdate     func(childComplexity int, id string, input *model.TransitionInput) int
+		UserRegister         func(childComplexity int, input model.NewUserInput) int
 	}
 
 	Query struct {
@@ -109,7 +120,18 @@ type CampaignResolver interface {
 	Players(ctx context.Context, obj *model.Campaign) ([]*model.User, error)
 }
 type MutationResolver interface {
-	CampaignNodeCreate(ctx context.Context, input model.NewCampaignNode) (*model.CampaignNode, error)
+	CampaignCreate(ctx context.Context, input *model.CampaignInput) (*model.Campaign, error)
+	CampaignUpdate(ctx context.Context, id string, input *model.CampaignInput) (*model.Campaign, error)
+	CampaignDelete(ctx context.Context, id string) (*model.Campaign, error)
+	CampaignRegisterUser(ctx context.Context, id string, userID string, playerType model.PlayerType) (*model.Campaign, error)
+	CampaignRemoveUser(ctx context.Context, id string, userID string) (*model.Campaign, error)
+	CampaignChangeOwner(ctx context.Context, id string, newOwner string) (*model.Campaign, error)
+	CampaignNodeCreate(ctx context.Context, input *model.CampaignNodeInput) (*model.CampaignNode, error)
+	CampaignNodeUpdate(ctx context.Context, id string, input *model.CampaignNodeInput) (*model.CampaignNode, error)
+	CampaignNodeDelete(ctx context.Context, id string) (*model.CampaignNode, error)
+	TransitionCreate(ctx context.Context, input *model.TransitionInput) (*model.Transition, error)
+	TransitionUpdate(ctx context.Context, id string, input *model.TransitionInput) (*model.Transition, error)
+	TransitionDelete(ctx context.Context, id string) (*model.Transition, error)
 	UserRegister(ctx context.Context, input model.NewUserInput) (*model.User, error)
 }
 type QueryResolver interface {
@@ -263,6 +285,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CampaignNode.Visited(childComplexity), true
 
+	case "Mutation.campaignChangeOwner":
+		if e.complexity.Mutation.CampaignChangeOwner == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignChangeOwner_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignChangeOwner(childComplexity, args["id"].(string), args["newOwner"].(string)), true
+
+	case "Mutation.campaignCreate":
+		if e.complexity.Mutation.CampaignCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignCreate(childComplexity, args["input"].(*model.CampaignInput)), true
+
+	case "Mutation.campaignDelete":
+		if e.complexity.Mutation.CampaignDelete == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignDelete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignDelete(childComplexity, args["id"].(string)), true
+
 	case "Mutation.campaignNodeCreate":
 		if e.complexity.Mutation.CampaignNodeCreate == nil {
 			break
@@ -273,7 +331,103 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CampaignNodeCreate(childComplexity, args["input"].(model.NewCampaignNode)), true
+		return e.complexity.Mutation.CampaignNodeCreate(childComplexity, args["input"].(*model.CampaignNodeInput)), true
+
+	case "Mutation.campaignNodeDelete":
+		if e.complexity.Mutation.CampaignNodeDelete == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignNodeDelete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignNodeDelete(childComplexity, args["id"].(string)), true
+
+	case "Mutation.campaignNodeUpdate":
+		if e.complexity.Mutation.CampaignNodeUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignNodeUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignNodeUpdate(childComplexity, args["id"].(string), args["input"].(*model.CampaignNodeInput)), true
+
+	case "Mutation.campaignRegisterUser":
+		if e.complexity.Mutation.CampaignRegisterUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignRegisterUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignRegisterUser(childComplexity, args["id"].(string), args["userId"].(string), args["playerType"].(model.PlayerType)), true
+
+	case "Mutation.campaignRemoveUser":
+		if e.complexity.Mutation.CampaignRemoveUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignRemoveUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignRemoveUser(childComplexity, args["id"].(string), args["userId"].(string)), true
+
+	case "Mutation.campaignUpdate":
+		if e.complexity.Mutation.CampaignUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_campaignUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CampaignUpdate(childComplexity, args["id"].(string), args["input"].(*model.CampaignInput)), true
+
+	case "Mutation.transitionCreate":
+		if e.complexity.Mutation.TransitionCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_transitionCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TransitionCreate(childComplexity, args["input"].(*model.TransitionInput)), true
+
+	case "Mutation.transitionDelete":
+		if e.complexity.Mutation.TransitionDelete == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_transitionDelete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TransitionDelete(childComplexity, args["id"].(string)), true
+
+	case "Mutation.transitionUpdate":
+		if e.complexity.Mutation.TransitionUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_transitionUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TransitionUpdate(childComplexity, args["id"].(string), args["input"].(*model.TransitionInput)), true
 
 	case "Mutation.userRegister":
 		if e.complexity.Mutation.UserRegister == nil {
@@ -297,7 +451,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Campaign(childComplexity, args["Id"].(string)), true
+		return e.complexity.Query.Campaign(childComplexity, args["id"].(string)), true
 
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
@@ -333,7 +487,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.User(childComplexity, args["Id"].(string)), true
+		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
 	case "Transition.description":
 		if e.complexity.Transition.Description == nil {
@@ -413,8 +567,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputNewCampaignNode,
+		ec.unmarshalInputCampaignInput,
+		ec.unmarshalInputCampaignNodeInput,
 		ec.unmarshalInputNewUserInput,
+		ec.unmarshalInputTransitionInput,
 	)
 	first := true
 
@@ -493,6 +649,11 @@ type Campaign {
     notes: [String!]!
 }
 
+enum PlayerType {
+    Gm,
+    Player
+}
+
 type CampaignNode {
     id: ID!
     title: String!
@@ -544,21 +705,52 @@ type AuthTokens {
 }
 
 type Query {
-    campaign(Id: ID!): Campaign!
-    user(Id: ID!): User!
+    campaign(id: ID!): Campaign!
+    user(id: ID!): User!
     login(email: String!, password: String!): AuthTokens!
     refresh(refreshToken: String!): AuthTokens!
 }
 
-input NewCampaignNode {
-    title: String!
+input CampaignInput {
+    title: String
+    description: String
+
+    notes: [String!]
+}
+
+input CampaignNodeInput {
+    title: String
+}
+
+input TransitionInput {
+    title: String
+    description: String
+
+    fromNode: ID
+    toNode: ID
+
+    transitionType: TransitionType
 }
 
 type Mutation {
-    campaignNodeCreate(input: NewCampaignNode!): CampaignNode!
+    # For managing the campaign
+    campaignCreate(input: CampaignInput): Campaign!
+    campaignUpdate(id: ID!, input: CampaignInput): Campaign!
+    campaignDelete(id: ID!): Campaign!
+    # For managing users of a campaign
+    campaignRegisterUser(id: ID!, userId: ID!, playerType: PlayerType!): Campaign!
+    campaignRemoveUser(id: ID!, userId: ID!): Campaign!
+    campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
+
+    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
+    campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
+    campaignNodeDelete(id: ID!): CampaignNode!
+
+    transitionCreate(input: TransitionInput): Transition!
+    transitionUpdate(id: ID!, input: TransitionInput): Transition!
+    transitionDelete(id: ID!): Transition!
 
     userRegister(input: NewUserInput!): User!
-
 }
 
 input NewUserInput {
@@ -574,18 +766,246 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_campaignNodeCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_campaignChangeOwner_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.NewCampaignNode
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["newOwner"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newOwner"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["newOwner"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CampaignInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewCampaignNode2nodeBasedPlannerᚋgraphᚋmodelᚐNewCampaignNode(ctx, tmp)
+		arg0, err = ec.unmarshalOCampaignInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignDelete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignNodeCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CampaignNodeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOCampaignNodeInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNodeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignNodeDelete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignNodeUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.CampaignNodeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOCampaignNodeInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNodeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignRegisterUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	var arg2 model.PlayerType
+	if tmp, ok := rawArgs["playerType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerType"))
+		arg2, err = ec.unmarshalNPlayerType2nodeBasedPlannerᚋgraphᚋmodelᚐPlayerType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerType"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignRemoveUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_campaignUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.CampaignInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOCampaignInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_transitionCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.TransitionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOTransitionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_transitionDelete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_transitionUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.TransitionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOTransitionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -623,14 +1043,14 @@ func (ec *executionContext) field_Query_campaign_args(ctx context.Context, rawAr
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["Id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["Id"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -677,14 +1097,14 @@ func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs m
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["Id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["Id"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1602,6 +2022,444 @@ func (ec *executionContext) fieldContext_CampaignNode_notes(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_campaignCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignCreate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignCreate(rctx, fc.Args["input"].(*model.CampaignInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignUpdate(rctx, fc.Args["id"].(string), fc.Args["input"].(*model.CampaignInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignDelete(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignDelete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignDelete(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignDelete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignRegisterUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignRegisterUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignRegisterUser(rctx, fc.Args["id"].(string), fc.Args["userId"].(string), fc.Args["playerType"].(model.PlayerType))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignRegisterUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignRegisterUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignRemoveUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignRemoveUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignRemoveUser(rctx, fc.Args["id"].(string), fc.Args["userId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignRemoveUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignRemoveUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignChangeOwner(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignChangeOwner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignChangeOwner(rctx, fc.Args["id"].(string), fc.Args["newOwner"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Campaign)
+	fc.Result = res
+	return ec.marshalNCampaign2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaign(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignChangeOwner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Campaign_id(ctx, field)
+			case "campaignNodes":
+				return ec.fieldContext_Campaign_campaignNodes(ctx, field)
+			case "owner":
+				return ec.fieldContext_Campaign_owner(ctx, field)
+			case "title":
+				return ec.fieldContext_Campaign_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Campaign_description(ctx, field)
+			case "gms":
+				return ec.fieldContext_Campaign_gms(ctx, field)
+			case "players":
+				return ec.fieldContext_Campaign_players(ctx, field)
+			case "notes":
+				return ec.fieldContext_Campaign_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Campaign", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignChangeOwner_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_campaignNodeCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_campaignNodeCreate(ctx, field)
 	if err != nil {
@@ -1616,7 +2474,7 @@ func (ec *executionContext) _Mutation_campaignNodeCreate(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CampaignNodeCreate(rctx, fc.Args["input"].(model.NewCampaignNode))
+		return ec.resolvers.Mutation().CampaignNodeCreate(rctx, fc.Args["input"].(*model.CampaignNodeInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1669,6 +2527,359 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeCreate(ctx context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_campaignNodeCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignNodeUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignNodeUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignNodeUpdate(rctx, fc.Args["id"].(string), fc.Args["input"].(*model.CampaignNodeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.CampaignNode)
+	fc.Result = res
+	return ec.marshalNCampaignNode2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignNodeUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CampaignNode_id(ctx, field)
+			case "title":
+				return ec.fieldContext_CampaignNode_title(ctx, field)
+			case "campaign":
+				return ec.fieldContext_CampaignNode_campaign(ctx, field)
+			case "visited":
+				return ec.fieldContext_CampaignNode_visited(ctx, field)
+			case "transit":
+				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "label":
+				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "description":
+				return ec.fieldContext_CampaignNode_description(ctx, field)
+			case "notes":
+				return ec.fieldContext_CampaignNode_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CampaignNode", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignNodeUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_campaignNodeDelete(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_campaignNodeDelete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CampaignNodeDelete(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.CampaignNode)
+	fc.Result = res
+	return ec.marshalNCampaignNode2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_campaignNodeDelete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CampaignNode_id(ctx, field)
+			case "title":
+				return ec.fieldContext_CampaignNode_title(ctx, field)
+			case "campaign":
+				return ec.fieldContext_CampaignNode_campaign(ctx, field)
+			case "visited":
+				return ec.fieldContext_CampaignNode_visited(ctx, field)
+			case "transit":
+				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "label":
+				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "description":
+				return ec.fieldContext_CampaignNode_description(ctx, field)
+			case "notes":
+				return ec.fieldContext_CampaignNode_notes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CampaignNode", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_campaignNodeDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_transitionCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_transitionCreate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TransitionCreate(rctx, fc.Args["input"].(*model.TransitionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Transition)
+	fc.Result = res
+	return ec.marshalNTransition2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_transitionCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transition_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Transition_title(ctx, field)
+			case "from":
+				return ec.fieldContext_Transition_from(ctx, field)
+			case "to":
+				return ec.fieldContext_Transition_to(ctx, field)
+			case "transitionType":
+				return ec.fieldContext_Transition_transitionType(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_transitionCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_transitionUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_transitionUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TransitionUpdate(rctx, fc.Args["id"].(string), fc.Args["input"].(*model.TransitionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Transition)
+	fc.Result = res
+	return ec.marshalNTransition2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_transitionUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transition_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Transition_title(ctx, field)
+			case "from":
+				return ec.fieldContext_Transition_from(ctx, field)
+			case "to":
+				return ec.fieldContext_Transition_to(ctx, field)
+			case "transitionType":
+				return ec.fieldContext_Transition_transitionType(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_transitionUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_transitionDelete(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_transitionDelete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TransitionDelete(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Transition)
+	fc.Result = res
+	return ec.marshalNTransition2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_transitionDelete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transition_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Transition_title(ctx, field)
+			case "from":
+				return ec.fieldContext_Transition_from(ctx, field)
+			case "to":
+				return ec.fieldContext_Transition_to(ctx, field)
+			case "transitionType":
+				return ec.fieldContext_Transition_transitionType(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_transitionDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -1754,7 +2965,7 @@ func (ec *executionContext) _Query_campaign(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Campaign(rctx, fc.Args["Id"].(string))
+		return ec.resolvers.Query().Campaign(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1827,7 +3038,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().User(rctx, fc.Args["Id"].(string))
+		return ec.resolvers.Query().User(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4396,8 +5607,52 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewCampaignNode(ctx context.Context, obj interface{}) (model.NewCampaignNode, error) {
-	var it model.NewCampaignNode
+func (ec *executionContext) unmarshalInputCampaignInput(ctx context.Context, obj interface{}) (model.CampaignInput, error) {
+	var it model.CampaignInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "description", "notes"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			it.Notes, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context, obj interface{}) (model.CampaignNodeInput, error) {
+	var it model.CampaignNodeInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4414,7 +5669,7 @@ func (ec *executionContext) unmarshalInputNewCampaignNode(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
-			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4459,6 +5714,66 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
 			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTransitionInput(ctx context.Context, obj interface{}) (model.TransitionInput, error) {
+	var it model.TransitionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "description", "fromNode", "toNode", "transitionType"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fromNode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromNode"))
+			it.FromNode, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "toNode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toNode"))
+			it.ToNode, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "transitionType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transitionType"))
+			it.TransitionType, err = ec.unmarshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4717,10 +6032,109 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "campaignCreate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignCreate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignUpdate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignUpdate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignDelete":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignDelete(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignRegisterUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignRegisterUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignRemoveUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignRemoveUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignChangeOwner":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignChangeOwner(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "campaignNodeCreate":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_campaignNodeCreate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignNodeUpdate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignNodeUpdate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "campaignNodeDelete":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_campaignNodeDelete(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transitionCreate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_transitionCreate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transitionUpdate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_transitionUpdate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transitionDelete":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_transitionDelete(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -5483,14 +6897,19 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewCampaignNode2nodeBasedPlannerᚋgraphᚋmodelᚐNewCampaignNode(ctx context.Context, v interface{}) (model.NewCampaignNode, error) {
-	res, err := ec.unmarshalInputNewCampaignNode(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNNewUserInput2nodeBasedPlannerᚋgraphᚋmodelᚐNewUserInput(ctx context.Context, v interface{}) (model.NewUserInput, error) {
 	res, err := ec.unmarshalInputNewUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPlayerType2nodeBasedPlannerᚋgraphᚋmodelᚐPlayerType(ctx context.Context, v interface{}) (model.PlayerType, error) {
+	var res model.PlayerType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPlayerType2nodeBasedPlannerᚋgraphᚋmodelᚐPlayerType(ctx context.Context, sel ast.SelectionSet, v model.PlayerType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -5538,6 +6957,10 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTransition2nodeBasedPlannerᚋgraphᚋmodelᚐTransition(ctx context.Context, sel ast.SelectionSet, v model.Transition) graphql.Marshaler {
+	return ec._Transition(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTransition2ᚕᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Transition) graphql.Marshaler {
@@ -5941,6 +7364,76 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOCampaignInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignInput(ctx context.Context, v interface{}) (*model.CampaignInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCampaignInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOCampaignNodeInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNodeInput(ctx context.Context, v interface{}) (*model.CampaignNodeInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCampaignNodeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -5955,6 +7448,30 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOTransitionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionInput(ctx context.Context, v interface{}) (*model.TransitionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTransitionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx context.Context, v interface{}) (*model.TransitionType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.TransitionType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx context.Context, sel ast.SelectionSet, v *model.TransitionType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

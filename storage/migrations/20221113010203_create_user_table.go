@@ -22,10 +22,13 @@ func init() {
 	}, func(ctx context.Context, db *bun.DB) error {
 		fmt.Print(" [down migration] ")
 
-		db.
+		_, err := db.
 			NewDropTable().
 			Model((*model.User)(nil)).
 			Exec(ctx)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})

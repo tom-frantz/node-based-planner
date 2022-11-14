@@ -16,6 +16,11 @@ type Campaign {
     notes: [String!]!
 }
 
+enum PlayerType {
+    Gm,
+    Player
+}
+
 type CampaignNode {
     id: ID!
     title: String!
@@ -67,21 +72,52 @@ type AuthTokens {
 }
 
 type Query {
-    campaign(Id: ID!): Campaign!
-    user(Id: ID!): User!
+    campaign(id: ID!): Campaign!
+    user(id: ID!): User!
     login(email: String!, password: String!): AuthTokens!
     refresh(refreshToken: String!): AuthTokens!
 }
 
-input NewCampaignNode {
-    title: String!
+input CampaignInput {
+    title: String
+    description: String
+
+    notes: [String!]
+}
+
+input CampaignNodeInput {
+    title: String
+}
+
+input TransitionInput {
+    title: String
+    description: String
+
+    fromNode: ID
+    toNode: ID
+
+    transitionType: TransitionType
 }
 
 type Mutation {
-    campaignNodeCreate(input: NewCampaignNode!): CampaignNode!
+    # For managing the campaign
+    campaignCreate(input: CampaignInput): Campaign!
+    campaignUpdate(id: ID!, input: CampaignInput): Campaign!
+    campaignDelete(id: ID!): Campaign!
+    # For managing users of a campaign
+    campaignRegisterUser(id: ID!, userId: ID!, playerType: PlayerType!): Campaign!
+    campaignRemoveUser(id: ID!, userId: ID!): Campaign!
+    campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
+
+    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
+    campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
+    campaignNodeDelete(id: ID!): CampaignNode!
+
+    transitionCreate(input: TransitionInput): Transition!
+    transitionUpdate(id: ID!, input: TransitionInput): Transition!
+    transitionDelete(id: ID!): Transition!
 
     userRegister(input: NewUserInput!): User!
-
 }
 
 input NewUserInput {
