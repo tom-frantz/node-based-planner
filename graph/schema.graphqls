@@ -1,0 +1,91 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Campaign {
+    id: ID!
+    campaignNodes: [CampaignNode!]!
+    owner: User!
+
+    title: String!
+    description: String
+
+    gms: [User!]!
+    players: [User!]!
+
+    notes: [String!]!
+}
+
+type CampaignNode {
+    id: ID!
+    title: String!
+    campaign: Campaign!
+
+    # Campaign Information
+    visited: [User!]!
+    transit: [Transition!]!
+
+    # Node information
+    label: String!  # A shorter identifier than the title, for quick identification by the end users.
+    description: String
+    notes: [String!]!
+}
+
+type Transition {
+    id: ID!
+    title: String!
+
+    # Transitions
+    from: CampaignNode!
+    to: CampaignNode!
+
+    transitionType: TransitionType!
+    description: String!
+}
+
+enum TransitionType {
+    Clue
+    Temporal
+    Geographic
+    Randomly
+    Proactively
+    Hybrid
+    PlayerDriven
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+
+    campaigns: [Campaign!]!
+}
+
+type AuthTokens {
+    access: String!
+    refresh: String!
+}
+
+type Query {
+    campaign(Id: ID!): Campaign!
+    user(Id: ID!): User!
+    login(email: String!, password: String!): AuthTokens!
+    refresh(refreshToken: String!): AuthTokens!
+}
+
+input NewCampaignNode {
+    title: String!
+}
+
+type Mutation {
+    campaignNodeCreate(input: NewCampaignNode!): CampaignNode!
+
+    userRegister(input: NewUserInput!): User!
+
+}
+
+input NewUserInput {
+    username: String!
+    password: String!,
+    email: String!
+}
