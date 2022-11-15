@@ -1,0 +1,19 @@
+
+type CampaignNode {
+    id: ID!
+    title: String!
+    campaign: Campaign!
+
+    # Campaign Information
+    visited: [User!]!
+    transit: [Transition!]!
+
+    # Node information
+    label: String!  # A shorter identifier than the title, for quick identification by the end users.
+    description: String
+    notes: [String!]!
+}
+
+input CampaignNodeInput {
+    title: String
+}

@@ -18,32 +18,34 @@ type User struct {
 	Campaigns []*Campaign `json:"campaigns" bun:"-"`
 }
 
-func (user *User) CreateUser(ctx context.Context, db *bun.DB) error {
+func (user *User) UserByLogin(ctx context.Context, db *bun.DB) (err error) {
+	err = db.
+		NewSelect().
+		Model(user).
+		Where("? = ?", bun.Ident("email"), user.Email).
+		Where("? = crypt(?, password)", bun.Ident("password"), user.Password).
+		Scan(ctx)
+
+	return
+}
+
+func (user *User) CreateUser(ctx context.Context, db *bun.DB) (err error) {
 	user.ID = ""
 
-	_, err := db.
+	_, err = db.
 		NewInsert().
 		Model(user).
 		Value("password", "crypt(?, gen_salt('bf'))", user.Password).
 		Exec(ctx)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return
 }
 
-func (user *User) DeleteUser(ctx context.Context, db *bun.DB) error {
-
-	_, err := db.
+func (user *User) DeleteUser(ctx context.Context, db *bun.DB) (err error) {
+	_, err = db.
 		NewDelete().
 		Model(user).
 		Exec(ctx)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return
 }

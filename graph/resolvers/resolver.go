@@ -1,8 +1,6 @@
-package graph
+package resolvers
 
-import (
-	"github.com/uptrace/bun"
-)
+import "github.com/uptrace/bun"
 
 // This file will not be regenerated automatically.
 //

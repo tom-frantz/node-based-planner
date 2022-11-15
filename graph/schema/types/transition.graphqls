@@ -1,0 +1,34 @@
+
+
+
+type Transition {
+    id: ID!
+    title: String!
+
+    # Transitions
+    from: CampaignNode!
+    to: CampaignNode!
+
+    transitionType: TransitionType!
+    description: String!
+}
+
+enum TransitionType {
+    Clue
+    Temporal
+    Geographic
+    Randomly
+    Proactively
+    Hybrid
+    PlayerDriven
+}
+
+input TransitionInput {
+    title: String
+    description: String
+
+    fromNode: ID
+    toNode: ID
+
+    transitionType: TransitionType
+}

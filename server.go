@@ -4,7 +4,7 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"log"
 	"net/http"
-	"nodeBasedPlanner/graph/generated"
+	"nodeBasedPlanner/generated"
 	"nodeBasedPlanner/storage/database"
 	"os"
 

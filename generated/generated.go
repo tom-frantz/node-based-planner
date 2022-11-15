@@ -631,11 +631,39 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+	{Name: "../graph/schema/auth.graphqls", Input: `type AuthTokens {
+    access: String!
+    refresh: String!
+}
+`, BuiltIn: false},
+	{Name: "../graph/schema/mutation.graphqls", Input: `type Mutation {
+    # For managing the campaign
+    campaignCreate(input: CampaignInput): Campaign!
+    campaignUpdate(id: ID!, input: CampaignInput): Campaign!
+    campaignDelete(id: ID!): Campaign!
+    # For managing users of a campaign
+    campaignRegisterUser(id: ID!, userId: ID!, playerType: PlayerType!): Campaign!
+    campaignRemoveUser(id: ID!, userId: ID!): Campaign!
+    campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
 
-type Campaign {
+    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
+    campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
+    campaignNodeDelete(id: ID!): CampaignNode!
+
+    transitionCreate(input: TransitionInput): Transition!
+    transitionUpdate(id: ID!, input: TransitionInput): Transition!
+    transitionDelete(id: ID!): Transition!
+
+    userRegister(input: NewUserInput!): User!
+}`, BuiltIn: false},
+	{Name: "../graph/schema/query.graphqls", Input: `type Query {
+    campaign(id: ID!): Campaign!
+    user(id: ID!): User!
+    login(email: String!, password: String!): AuthTokens!
+    refresh(refreshToken: String!): AuthTokens!
+}
+`, BuiltIn: false},
+	{Name: "../graph/schema/types/campaign.graphqls", Input: `type Campaign {
     id: ID!
     campaignNodes: [CampaignNode!]!
     owner: User!
@@ -654,6 +682,14 @@ enum PlayerType {
     Player
 }
 
+input CampaignInput {
+    title: String
+    description: String
+
+    notes: [String!]
+}
+`, BuiltIn: false},
+	{Name: "../graph/schema/types/campaign_node.graphqls", Input: `
 type CampaignNode {
     id: ID!
     title: String!
@@ -668,6 +704,13 @@ type CampaignNode {
     description: String
     notes: [String!]!
 }
+
+input CampaignNodeInput {
+    title: String
+}
+`, BuiltIn: false},
+	{Name: "../graph/schema/types/transition.graphqls", Input: `
+
 
 type Transition {
     id: ID!
@@ -691,37 +734,6 @@ enum TransitionType {
     PlayerDriven
 }
 
-type User {
-    id: ID!
-    name: String!
-    email: String!
-
-    campaigns: [Campaign!]!
-}
-
-type AuthTokens {
-    access: String!
-    refresh: String!
-}
-
-type Query {
-    campaign(id: ID!): Campaign!
-    user(id: ID!): User!
-    login(email: String!, password: String!): AuthTokens!
-    refresh(refreshToken: String!): AuthTokens!
-}
-
-input CampaignInput {
-    title: String
-    description: String
-
-    notes: [String!]
-}
-
-input CampaignNodeInput {
-    title: String
-}
-
 input TransitionInput {
     title: String
     description: String
@@ -730,28 +742,16 @@ input TransitionInput {
     toNode: ID
 
     transitionType: TransitionType
+}`, BuiltIn: false},
+	{Name: "../graph/schema/types/user.graphqls", Input: `
+type User {
+    id: ID!
+    name: String!
+    email: String!
+
+    campaigns: [Campaign!]!
 }
 
-type Mutation {
-    # For managing the campaign
-    campaignCreate(input: CampaignInput): Campaign!
-    campaignUpdate(id: ID!, input: CampaignInput): Campaign!
-    campaignDelete(id: ID!): Campaign!
-    # For managing users of a campaign
-    campaignRegisterUser(id: ID!, userId: ID!, playerType: PlayerType!): Campaign!
-    campaignRemoveUser(id: ID!, userId: ID!): Campaign!
-    campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
-
-    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
-    campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
-    campaignNodeDelete(id: ID!): CampaignNode!
-
-    transitionCreate(input: TransitionInput): Transition!
-    transitionUpdate(id: ID!, input: TransitionInput): Transition!
-    transitionDelete(id: ID!): Transition!
-
-    userRegister(input: NewUserInput!): User!
-}
 
 input NewUserInput {
     username: String!

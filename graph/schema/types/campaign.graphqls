@@ -1,0 +1,25 @@
+type Campaign {
+    id: ID!
+    campaignNodes: [CampaignNode!]!
+    owner: User!
+
+    title: String!
+    description: String
+
+    gms: [User!]!
+    players: [User!]!
+
+    notes: [String!]!
+}
+
+enum PlayerType {
+    Gm,
+    Player
+}
+
+input CampaignInput {
+    title: String
+    description: String
+
+    notes: [String!]
+}

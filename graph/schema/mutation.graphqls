@@ -1,0 +1,20 @@
+type Mutation {
+    # For managing the campaign
+    campaignCreate(input: CampaignInput): Campaign!
+    campaignUpdate(id: ID!, input: CampaignInput): Campaign!
+    campaignDelete(id: ID!): Campaign!
+    # For managing users of a campaign
+    campaignRegisterUser(id: ID!, userId: ID!, playerType: PlayerType!): Campaign!
+    campaignRemoveUser(id: ID!, userId: ID!): Campaign!
+    campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
+
+    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
+    campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
+    campaignNodeDelete(id: ID!): CampaignNode!
+
+    transitionCreate(input: TransitionInput): Transition!
+    transitionUpdate(id: ID!, input: TransitionInput): Transition!
+    transitionDelete(id: ID!): Transition!
+
+    userRegister(input: NewUserInput!): User!
+}
