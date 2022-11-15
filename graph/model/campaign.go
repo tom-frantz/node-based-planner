@@ -1,5 +1,10 @@
 package model
 
+import (
+	"context"
+	"github.com/uptrace/bun"
+)
+
 type Campaign struct {
 	ID string `json:"id" bun:"id,pk,type:uuid,default:gen_random_uuid()"`
 
@@ -15,4 +20,17 @@ type Campaign struct {
 	Players []*User `json:"players" bun:"-"`
 
 	Notes []string `json:"notes" bun:"notes,array"`
+}
+
+func (campaign *Campaign) CreateCampaign(ctx context.Context, db *bun.DB) (err error) {
+	_, err = db.
+		NewInsert().
+		Model(campaign).
+		Exec(ctx)
+	return
+}
+
+func (campaign *Campaign) SelectCampaignByPk(ctx context.Context, db *bun.DB) (err error) {
+	err = db.NewSelect().Model(campaign).WherePK().Scan(ctx)
+	return
 }

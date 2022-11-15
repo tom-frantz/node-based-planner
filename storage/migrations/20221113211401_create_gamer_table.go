@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/uptrace/bun"
+	model2 "nodeBasedPlanner/graph/model"
 	"nodeBasedPlanner/storage/model"
 )
 
@@ -11,7 +12,7 @@ func init() {
 	Migrations.MustRegister(func(ctx context.Context, db *bun.DB) error {
 		fmt.Print(" [up migration] ")
 
-		_, err := db.ExecContext(ctx, "CREATE TYPE gamer_role AS ENUM ('gm', 'player')")
+		_, err := db.ExecContext(ctx, "CREATE TYPE gamer_role AS ENUM ('"+string(model2.PlayerTypeGm)+"', '"+string(model2.PlayerTypePlayer)+"')")
 		if err != nil {
 			return err
 		}

@@ -42,17 +42,8 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 
 // Login is the resolver for the login field.
 func (r *queryResolver) Login(ctx context.Context, email string, password string) (*model.AuthTokens, error) {
-	user := new(model.User)
-
-	err := r.Db.
-		NewSelect().
-		Model(user).
-		Where("? = ?", bun.Ident("email"), email).
-		Where("password = crypt(?, password)", password).
-		Scan(ctx)
-
-	if err != nil {
-		// TODO log it here
+	user := &model.User{Password: password, Email: email}
+	if err := user.UserByLogin(ctx, r.Db); err != nil {
 		return nil, errors.New("invalid email or password")
 	}
 

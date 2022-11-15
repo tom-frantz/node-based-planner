@@ -8,11 +8,39 @@ import (
 	"fmt"
 	"nodeBasedPlanner/generated"
 	"nodeBasedPlanner/graph/model"
+	databaseModel "nodeBasedPlanner/storage/model"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // CampaignCreate is the resolver for the campaignCreate field.
-func (r *mutationResolver) CampaignCreate(ctx context.Context, input *model.CampaignInput) (*model.Campaign, error) {
-	panic(fmt.Errorf("not implemented: CampaignCreate - campaignCreate"))
+func (r *mutationResolver) CampaignCreate(ctx context.Context, userID string, input *model.CampaignInput) (*model.Campaign, error) {
+	// TODO make a GQL validator helper perhaps?.
+	validationErrors := []string{}
+
+	if input.Title == nil {
+		validationErrors = append(validationErrors, "No title specified")
+	}
+
+	if len(validationErrors) != 0 {
+		for _, validationError := range validationErrors {
+			graphql.AddErrorf(ctx, validationError)
+		}
+		return nil, nil
+	}
+
+	campaign := &model.Campaign{
+		Title:       *input.Title,
+		OwnerId:     userID,
+		Description: input.Description,
+		Notes:       input.Notes,
+	}
+	err := campaign.CreateCampaign(ctx, r.Db)
+	if err != nil {
+		return nil, err
+	}
+
+	return campaign, nil
 }
 
 // CampaignUpdate is the resolver for the campaignUpdate field.
@@ -27,7 +55,20 @@ func (r *mutationResolver) CampaignDelete(ctx context.Context, id string) (*mode
 
 // CampaignRegisterUser is the resolver for the campaignRegisterUser field.
 func (r *mutationResolver) CampaignRegisterUser(ctx context.Context, id string, userID string, playerType model.PlayerType) (*model.Campaign, error) {
-	panic(fmt.Errorf("not implemented: CampaignRegisterUser - campaignRegisterUser"))
+	println(playerType)
+	gamer := databaseModel.Gamer{CampaignId: id, UserId: userID, Role: playerType}
+	err := gamer.InsertGamer(ctx, r.Db)
+	if err != nil {
+		return nil, err
+	}
+
+	campaign := &model.Campaign{ID: id}
+	err = campaign.SelectCampaignByPk(ctx, r.Db)
+	if err != nil {
+		return nil, err
+	}
+
+	return campaign, nil
 }
 
 // CampaignRemoveUser is the resolver for the campaignRemoveUser field.
@@ -41,7 +82,7 @@ func (r *mutationResolver) CampaignChangeOwner(ctx context.Context, id string, n
 }
 
 // CampaignNodeCreate is the resolver for the campaignNodeCreate field.
-func (r *mutationResolver) CampaignNodeCreate(ctx context.Context, input *model.CampaignNodeInput) (*model.CampaignNode, error) {
+func (r *mutationResolver) CampaignNodeCreate(ctx context.Context, campaignID string, input *model.CampaignNodeInput) (*model.CampaignNode, error) {
 	panic(fmt.Errorf("not implemented: CampaignNodeCreate - campaignNodeCreate"))
 }
 

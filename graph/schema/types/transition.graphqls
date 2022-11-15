@@ -1,6 +1,3 @@
-
-
-
 type Transition {
     id: ID!
     title: String!
@@ -14,13 +11,13 @@ type Transition {
 }
 
 enum TransitionType {
-    Clue
-    Temporal
-    Geographic
-    Randomly
-    Proactively
-    Hybrid
-    PlayerDriven
+    CLUE
+    TEMPORAL
+    GEOGRAPHIC
+    RANDOMLY
+    PROACTIVELY
+    PLAYERDRIVEN
+    HYBRID
 }
 
 input TransitionInput {

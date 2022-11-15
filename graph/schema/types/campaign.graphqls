@@ -13,8 +13,8 @@ type Campaign {
 }
 
 enum PlayerType {
-    Gm,
-    Player
+    GM,
+    PLAYER
 }
 
 input CampaignInput {

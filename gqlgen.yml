@@ -70,6 +70,8 @@ models:
         resolver: true
   Campaign:
     fields:
+      owner:
+        resolver: true
       gms:
         resolver: true
       players:

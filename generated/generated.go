@@ -75,9 +75,9 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CampaignChangeOwner  func(childComplexity int, id string, newOwner string) int
-		CampaignCreate       func(childComplexity int, input *model.CampaignInput) int
+		CampaignCreate       func(childComplexity int, userID string, input *model.CampaignInput) int
 		CampaignDelete       func(childComplexity int, id string) int
-		CampaignNodeCreate   func(childComplexity int, input *model.CampaignNodeInput) int
+		CampaignNodeCreate   func(childComplexity int, campaignID string, input *model.CampaignNodeInput) int
 		CampaignNodeDelete   func(childComplexity int, id string) int
 		CampaignNodeUpdate   func(childComplexity int, id string, input *model.CampaignNodeInput) int
 		CampaignRegisterUser func(childComplexity int, id string, userID string, playerType model.PlayerType) int
@@ -115,18 +115,19 @@ type ComplexityRoot struct {
 
 type CampaignResolver interface {
 	CampaignNodes(ctx context.Context, obj *model.Campaign) ([]*model.CampaignNode, error)
+	Owner(ctx context.Context, obj *model.Campaign) (*model.User, error)
 
 	Gms(ctx context.Context, obj *model.Campaign) ([]*model.User, error)
 	Players(ctx context.Context, obj *model.Campaign) ([]*model.User, error)
 }
 type MutationResolver interface {
-	CampaignCreate(ctx context.Context, input *model.CampaignInput) (*model.Campaign, error)
+	CampaignCreate(ctx context.Context, userID string, input *model.CampaignInput) (*model.Campaign, error)
 	CampaignUpdate(ctx context.Context, id string, input *model.CampaignInput) (*model.Campaign, error)
 	CampaignDelete(ctx context.Context, id string) (*model.Campaign, error)
 	CampaignRegisterUser(ctx context.Context, id string, userID string, playerType model.PlayerType) (*model.Campaign, error)
 	CampaignRemoveUser(ctx context.Context, id string, userID string) (*model.Campaign, error)
 	CampaignChangeOwner(ctx context.Context, id string, newOwner string) (*model.Campaign, error)
-	CampaignNodeCreate(ctx context.Context, input *model.CampaignNodeInput) (*model.CampaignNode, error)
+	CampaignNodeCreate(ctx context.Context, campaignID string, input *model.CampaignNodeInput) (*model.CampaignNode, error)
 	CampaignNodeUpdate(ctx context.Context, id string, input *model.CampaignNodeInput) (*model.CampaignNode, error)
 	CampaignNodeDelete(ctx context.Context, id string) (*model.CampaignNode, error)
 	TransitionCreate(ctx context.Context, input *model.TransitionInput) (*model.Transition, error)
@@ -307,7 +308,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CampaignCreate(childComplexity, args["input"].(*model.CampaignInput)), true
+		return e.complexity.Mutation.CampaignCreate(childComplexity, args["userId"].(string), args["input"].(*model.CampaignInput)), true
 
 	case "Mutation.campaignDelete":
 		if e.complexity.Mutation.CampaignDelete == nil {
@@ -331,7 +332,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CampaignNodeCreate(childComplexity, args["input"].(*model.CampaignNodeInput)), true
+		return e.complexity.Mutation.CampaignNodeCreate(childComplexity, args["campaignId"].(string), args["input"].(*model.CampaignNodeInput)), true
 
 	case "Mutation.campaignNodeDelete":
 		if e.complexity.Mutation.CampaignNodeDelete == nil {
@@ -638,7 +639,7 @@ var sources = []*ast.Source{
 `, BuiltIn: false},
 	{Name: "../graph/schema/mutation.graphqls", Input: `type Mutation {
     # For managing the campaign
-    campaignCreate(input: CampaignInput): Campaign!
+    campaignCreate(userId: ID!, input: CampaignInput): Campaign!
     campaignUpdate(id: ID!, input: CampaignInput): Campaign!
     campaignDelete(id: ID!): Campaign!
     # For managing users of a campaign
@@ -646,7 +647,7 @@ var sources = []*ast.Source{
     campaignRemoveUser(id: ID!, userId: ID!): Campaign!
     campaignChangeOwner(id: ID!, newOwner: ID!): Campaign!
 
-    campaignNodeCreate(input: CampaignNodeInput): CampaignNode!
+    campaignNodeCreate(campaignId: ID!, input: CampaignNodeInput): CampaignNode!
     campaignNodeUpdate(id: ID!, input: CampaignNodeInput): CampaignNode!
     campaignNodeDelete(id: ID!): CampaignNode!
 
@@ -678,8 +679,8 @@ var sources = []*ast.Source{
 }
 
 enum PlayerType {
-    Gm,
-    Player
+    GM,
+    PLAYER
 }
 
 input CampaignInput {
@@ -689,8 +690,7 @@ input CampaignInput {
     notes: [String!]
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/campaign_node.graphqls", Input: `
-type CampaignNode {
+	{Name: "../graph/schema/types/campaign_node.graphqls", Input: `type CampaignNode {
     id: ID!
     title: String!
     campaign: Campaign!
@@ -709,10 +709,7 @@ input CampaignNodeInput {
     title: String
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/transition.graphqls", Input: `
-
-
-type Transition {
+	{Name: "../graph/schema/types/transition.graphqls", Input: `type Transition {
     id: ID!
     title: String!
 
@@ -725,13 +722,13 @@ type Transition {
 }
 
 enum TransitionType {
-    Clue
-    Temporal
-    Geographic
-    Randomly
-    Proactively
-    Hybrid
-    PlayerDriven
+    CLUE
+    TEMPORAL
+    GEOGRAPHIC
+    RANDOMLY
+    PROACTIVELY
+    PLAYERDRIVEN
+    HYBRID
 }
 
 input TransitionInput {
@@ -742,16 +739,15 @@ input TransitionInput {
     toNode: ID
 
     transitionType: TransitionType
-}`, BuiltIn: false},
-	{Name: "../graph/schema/types/user.graphqls", Input: `
-type User {
+}
+`, BuiltIn: false},
+	{Name: "../graph/schema/types/user.graphqls", Input: `type User {
     id: ID!
     name: String!
     email: String!
 
     campaigns: [Campaign!]!
 }
-
 
 input NewUserInput {
     username: String!
@@ -793,15 +789,24 @@ func (ec *executionContext) field_Mutation_campaignChangeOwner_args(ctx context.
 func (ec *executionContext) field_Mutation_campaignCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CampaignInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOCampaignInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignInput(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["userId"] = arg0
+	var arg1 *model.CampaignInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOCampaignInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -823,15 +828,24 @@ func (ec *executionContext) field_Mutation_campaignDelete_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_campaignNodeCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CampaignNodeInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOCampaignNodeInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNodeInput(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["campaignId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("campaignId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["campaignId"] = arg0
+	var arg1 *model.CampaignNodeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalOCampaignNodeInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐCampaignNodeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1354,7 +1368,7 @@ func (ec *executionContext) _Campaign_owner(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Owner, nil
+		return ec.resolvers.Campaign().Owner(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1375,8 +1389,8 @@ func (ec *executionContext) fieldContext_Campaign_owner(ctx context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "Campaign",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -2036,7 +2050,7 @@ func (ec *executionContext) _Mutation_campaignCreate(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CampaignCreate(rctx, fc.Args["input"].(*model.CampaignInput))
+		return ec.resolvers.Mutation().CampaignCreate(rctx, fc.Args["userId"].(string), fc.Args["input"].(*model.CampaignInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2474,7 +2488,7 @@ func (ec *executionContext) _Mutation_campaignNodeCreate(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CampaignNodeCreate(rctx, fc.Args["input"].(*model.CampaignNodeInput))
+		return ec.resolvers.Mutation().CampaignNodeCreate(rctx, fc.Args["campaignId"].(string), fc.Args["input"].(*model.CampaignNodeInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5864,12 +5878,25 @@ func (ec *executionContext) _Campaign(ctx context.Context, sel ast.SelectionSet,
 
 			})
 		case "owner":
+			field := field
 
-			out.Values[i] = ec._Campaign_owner(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Campaign_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "title":
 
 			out.Values[i] = ec._Campaign_title(ctx, field, obj)

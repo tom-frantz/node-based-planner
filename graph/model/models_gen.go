@@ -40,8 +40,8 @@ type TransitionInput struct {
 type PlayerType string
 
 const (
-	PlayerTypeGm     PlayerType = "Gm"
-	PlayerTypePlayer PlayerType = "Player"
+	PlayerTypeGm     PlayerType = "GM"
+	PlayerTypePlayer PlayerType = "PLAYER"
 )
 
 var AllPlayerType = []PlayerType{
@@ -81,13 +81,13 @@ func (e PlayerType) MarshalGQL(w io.Writer) {
 type TransitionType string
 
 const (
-	TransitionTypeClue         TransitionType = "Clue"
-	TransitionTypeTemporal     TransitionType = "Temporal"
-	TransitionTypeGeographic   TransitionType = "Geographic"
-	TransitionTypeRandomly     TransitionType = "Randomly"
-	TransitionTypeProactively  TransitionType = "Proactively"
-	TransitionTypeHybrid       TransitionType = "Hybrid"
-	TransitionTypePlayerDriven TransitionType = "PlayerDriven"
+	TransitionTypeClue         TransitionType = "CLUE"
+	TransitionTypeTemporal     TransitionType = "TEMPORAL"
+	TransitionTypeGeographic   TransitionType = "GEOGRAPHIC"
+	TransitionTypeRandomly     TransitionType = "RANDOMLY"
+	TransitionTypeProactively  TransitionType = "PROACTIVELY"
+	TransitionTypePlayerdriven TransitionType = "PLAYERDRIVEN"
+	TransitionTypeHybrid       TransitionType = "HYBRID"
 )
 
 var AllTransitionType = []TransitionType{
@@ -96,13 +96,13 @@ var AllTransitionType = []TransitionType{
 	TransitionTypeGeographic,
 	TransitionTypeRandomly,
 	TransitionTypeProactively,
+	TransitionTypePlayerdriven,
 	TransitionTypeHybrid,
-	TransitionTypePlayerDriven,
 }
 
 func (e TransitionType) IsValid() bool {
 	switch e {
-	case TransitionTypeClue, TransitionTypeTemporal, TransitionTypeGeographic, TransitionTypeRandomly, TransitionTypeProactively, TransitionTypeHybrid, TransitionTypePlayerDriven:
+	case TransitionTypeClue, TransitionTypeTemporal, TransitionTypeGeographic, TransitionTypeRandomly, TransitionTypeProactively, TransitionTypePlayerdriven, TransitionTypeHybrid:
 		return true
 	}
 	return false
