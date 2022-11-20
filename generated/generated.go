@@ -71,7 +71,7 @@ type ComplexityRoot struct {
 		Label       func(childComplexity int) int
 		Notes       func(childComplexity int) int
 		Title       func(childComplexity int) int
-		Transit     func(childComplexity int) int
+		Transitions func(childComplexity int) int
 		Visited     func(childComplexity int) int
 	}
 
@@ -124,6 +124,8 @@ type CampaignResolver interface {
 }
 type CampaignNodeResolver interface {
 	Campaign(ctx context.Context, obj *model.CampaignNode) (*model.Campaign, error)
+
+	Transitions(ctx context.Context, obj *model.CampaignNode) ([]*model.Transition, error)
 }
 type MutationResolver interface {
 	CampaignCreate(ctx context.Context, userID string, input *model.CampaignInput) (*model.Campaign, error)
@@ -281,12 +283,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CampaignNode.Title(childComplexity), true
 
-	case "CampaignNode.transit":
-		if e.complexity.CampaignNode.Transit == nil {
+	case "CampaignNode.transitions":
+		if e.complexity.CampaignNode.Transitions == nil {
 			break
 		}
 
-		return e.complexity.CampaignNode.Transit(childComplexity), true
+		return e.complexity.CampaignNode.Transitions(childComplexity), true
 
 	case "CampaignNode.visited":
 		if e.complexity.CampaignNode.Visited == nil {
@@ -706,7 +708,7 @@ input CampaignInput {
 
     # Campaign Information
     visited: [User!]!
-    transit: [Transition!]!
+    transitions: [Transition!]!
 
     # Node information
     label: String!  # A shorter identifier than the title, for quick identification by the end users.
@@ -724,13 +726,13 @@ input CampaignNodeInput {
 	{Name: "../graph/schema/types/transition.graphqls", Input: `type Transition {
     id: ID!
     title: String!
+    description: String
 
     # Transitions
     from: CampaignNode!
     to: CampaignNode!
 
     transitionType: [TransitionType!]!
-    description: String!
 }
 
 enum TransitionType {
@@ -1351,8 +1353,8 @@ func (ec *executionContext) fieldContext_Campaign_campaignNodes(ctx context.Cont
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -1861,8 +1863,8 @@ func (ec *executionContext) fieldContext_CampaignNode_visited(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _CampaignNode_transit(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CampaignNode_transit(ctx, field)
+func (ec *executionContext) _CampaignNode_transitions(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CampaignNode_transitions(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1875,7 +1877,7 @@ func (ec *executionContext) _CampaignNode_transit(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Transit, nil
+		return ec.resolvers.CampaignNode().Transitions(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1892,26 +1894,26 @@ func (ec *executionContext) _CampaignNode_transit(ctx context.Context, field gra
 	return ec.marshalNTransition2ᚕᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CampaignNode_transit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CampaignNode_transitions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CampaignNode",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Transition_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Transition_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
 			case "from":
 				return ec.fieldContext_Transition_from(ctx, field)
 			case "to":
 				return ec.fieldContext_Transition_to(ctx, field)
 			case "transitionType":
 				return ec.fieldContext_Transition_transitionType(ctx, field)
-			case "description":
-				return ec.fieldContext_Transition_description(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
 		},
@@ -2533,8 +2535,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeCreate(ctx context
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -2606,8 +2608,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeUpdate(ctx context
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -2679,8 +2681,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeDelete(ctx context
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -2748,14 +2750,14 @@ func (ec *executionContext) fieldContext_Mutation_transitionCreate(ctx context.C
 				return ec.fieldContext_Transition_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Transition_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
 			case "from":
 				return ec.fieldContext_Transition_from(ctx, field)
 			case "to":
 				return ec.fieldContext_Transition_to(ctx, field)
 			case "transitionType":
 				return ec.fieldContext_Transition_transitionType(ctx, field)
-			case "description":
-				return ec.fieldContext_Transition_description(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
 		},
@@ -2817,14 +2819,14 @@ func (ec *executionContext) fieldContext_Mutation_transitionUpdate(ctx context.C
 				return ec.fieldContext_Transition_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Transition_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
 			case "from":
 				return ec.fieldContext_Transition_from(ctx, field)
 			case "to":
 				return ec.fieldContext_Transition_to(ctx, field)
 			case "transitionType":
 				return ec.fieldContext_Transition_transitionType(ctx, field)
-			case "description":
-				return ec.fieldContext_Transition_description(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
 		},
@@ -2886,14 +2888,14 @@ func (ec *executionContext) fieldContext_Mutation_transitionDelete(ctx context.C
 				return ec.fieldContext_Transition_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Transition_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Transition_description(ctx, field)
 			case "from":
 				return ec.fieldContext_Transition_from(ctx, field)
 			case "to":
 				return ec.fieldContext_Transition_to(ctx, field)
 			case "transitionType":
 				return ec.fieldContext_Transition_transitionType(ctx, field)
-			case "description":
-				return ec.fieldContext_Transition_description(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transition", field.Name)
 		},
@@ -3454,6 +3456,47 @@ func (ec *executionContext) fieldContext_Transition_title(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Transition_description(ctx context.Context, field graphql.CollectedField, obj *model.Transition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transition_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transition_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Transition_from(ctx context.Context, field graphql.CollectedField, obj *model.Transition) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Transition_from(ctx, field)
 	if err != nil {
@@ -3501,8 +3544,8 @@ func (ec *executionContext) fieldContext_Transition_from(ctx context.Context, fi
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -3563,8 +3606,8 @@ func (ec *executionContext) fieldContext_Transition_to(ctx context.Context, fiel
 				return ec.fieldContext_CampaignNode_campaign(ctx, field)
 			case "visited":
 				return ec.fieldContext_CampaignNode_visited(ctx, field)
-			case "transit":
-				return ec.fieldContext_CampaignNode_transit(ctx, field)
+			case "transitions":
+				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "description":
@@ -3617,50 +3660,6 @@ func (ec *executionContext) fieldContext_Transition_transitionType(ctx context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type TransitionType does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Transition_description(ctx context.Context, field graphql.CollectedField, obj *model.Transition) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transition_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Transition_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Transition",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6053,13 +6052,26 @@ func (ec *executionContext) _CampaignNode(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "transit":
+		case "transitions":
+			field := field
 
-			out.Values[i] = ec._CampaignNode_transit(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignNode_transitions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "label":
 
 			out.Values[i] = ec._CampaignNode_label(ctx, field, obj)
@@ -6394,6 +6406,10 @@ func (ec *executionContext) _Transition(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "description":
+
+			out.Values[i] = ec._Transition_description(ctx, field, obj)
+
 		case "from":
 			field := field
 
@@ -6437,13 +6453,6 @@ func (ec *executionContext) _Transition(ctx context.Context, sel ast.SelectionSe
 		case "transitionType":
 
 			out.Values[i] = ec._Transition_transitionType(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "description":
-
-			out.Values[i] = ec._Transition_description(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/uptrace/bun"
 )
@@ -16,27 +17,27 @@ type Transition struct {
 	To     *CampaignNode `json:"to" bun:"rel:belongs-to,join:to_id=id"`
 
 	TransitionType []TransitionType `json:"transitionType" bun:"transition_type,type:string,array"`
-	Description    string           `json:"description" bun:"description"`
+	Description    *string          `json:"description" bun:"description"`
 }
 
 func (transition *Transition) CreateFromInput(simpleInput interface{}, ctx context.Context, query *bun.InsertQuery) (err error) {
 	input := simpleInput.(*TransitionInput)
 
-	if *input.FromNode == "" {
+	if input.FromNode == nil || *input.FromNode == "" {
 		graphql.AddErrorf(ctx, "'fromNode' is a required field, but was not set")
 	}
 
-	if *input.ToNode == "" {
+	if input.ToNode == nil || *input.ToNode == "" {
 		graphql.AddErrorf(ctx, "'toNode' is a required field, but was not set")
 	}
 
-	if *input.Title == "" {
+	if input.Title == nil || *input.Title == "" {
 		graphql.AddErrorf(ctx, "'title' is a required field, but was not set")
 	}
 
 	errors := graphql.GetErrors(ctx)
 	if len(errors) > 0 {
-		return
+		return fmt.Errorf("input validation error")
 	}
 
 	transition.FromId = *input.FromNode
@@ -51,14 +52,14 @@ func (transition *Transition) CreateFromInput(simpleInput interface{}, ctx conte
 func (transition *Transition) ApplyInput(simpleInput interface{}, ctx context.Context, query *bun.UpdateQuery) (err error) {
 	input := simpleInput.(*TransitionInput)
 
-	if *input.Title != "" {
+	if input.Title != nil && *input.Title != "" {
 		transition.Title = *input.Title
 	} else {
 		query.ExcludeColumn("title")
 	}
 
 	if input.Description != nil {
-		transition.Description = *input.Description
+		transition.Description = input.Description
 	}
 	if input.FromNode != nil {
 		transition.FromId = *input.FromNode

@@ -1,13 +1,13 @@
 type Transition {
     id: ID!
     title: String!
+    description: String
 
     # Transitions
     from: CampaignNode!
     to: CampaignNode!
 
     transitionType: [TransitionType!]!
-    description: String!
 }
 
 enum TransitionType {

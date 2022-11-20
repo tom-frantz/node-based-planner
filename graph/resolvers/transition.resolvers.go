@@ -5,19 +5,31 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"nodeBasedPlanner/generated"
 	"nodeBasedPlanner/graph/model"
+	databaseModel "nodeBasedPlanner/storage/model"
 )
 
 // From is the resolver for the from field.
 func (r *transitionResolver) From(ctx context.Context, obj *model.Transition) (*model.CampaignNode, error) {
-	panic(fmt.Errorf("not implemented: From - from"))
+	campaignNode := &model.CampaignNode{ID: obj.FromId}
+	err := (&databaseModel.SimpleModel{Model: campaignNode}).SelectByPk(ctx, r.Db)
+
+	if err != nil {
+		return nil, err
+	}
+	return campaignNode, nil
 }
 
 // To is the resolver for the to field.
 func (r *transitionResolver) To(ctx context.Context, obj *model.Transition) (*model.CampaignNode, error) {
-	panic(fmt.Errorf("not implemented: To - to"))
+	campaignNode := &model.CampaignNode{ID: obj.ToId}
+	err := (&databaseModel.SimpleModel{Model: campaignNode}).SelectByPk(ctx, r.Db)
+
+	if err != nil {
+		return nil, err
+	}
+	return campaignNode, nil
 }
 
 // Transition returns generated.TransitionResolver implementation.

@@ -5,7 +5,7 @@ type CampaignNode {
 
     # Campaign Information
     visited: [User!]!
-    transit: [Transition!]!
+    transitions: [Transition!]!
 
     # Node information
     label: String!  # A shorter identifier than the title, for quick identification by the end users.

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/uptrace/bun"
 )
@@ -39,7 +40,7 @@ func (campaign *Campaign) CreateFromInput(simpleInput interface{}, ctx context.C
 
 	errors := graphql.GetErrors(ctx)
 	if len(errors) > 0 {
-		return
+		return fmt.Errorf("input validation error")
 	}
 
 	campaign.Title = *input.Title
