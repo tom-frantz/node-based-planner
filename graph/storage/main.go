@@ -6,8 +6,8 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"github.com/uptrace/bun/migrate"
 	"log"
-	"nodeBasedPlanner/storage/database"
-	"nodeBasedPlanner/storage/migrations"
+	"nodeBasedPlanner/graph/storage/database"
+	"nodeBasedPlanner/graph/storage/migrations"
 	"os"
 	"strings"
 

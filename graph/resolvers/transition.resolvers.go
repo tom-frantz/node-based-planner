@@ -5,9 +5,9 @@ package resolvers
 
 import (
 	"context"
-	"nodeBasedPlanner/generated"
+	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
-	databaseModel "nodeBasedPlanner/storage/model"
+	databaseModel "nodeBasedPlanner/graph/storage/model"
 )
 
 // From is the resolver for the from field.
@@ -32,7 +32,7 @@ func (r *transitionResolver) To(ctx context.Context, obj *model.Transition) (*mo
 	return campaignNode, nil
 }
 
-// Transition returns generated.TransitionResolver implementation.
-func (r *Resolver) Transition() generated.TransitionResolver { return &transitionResolver{r} }
+// Transition returns generated1.TransitionResolver implementation.
+func (r *Resolver) Transition() generated1.TransitionResolver { return &transitionResolver{r} }
 
 type transitionResolver struct{ *Resolver }

@@ -643,12 +643,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../graph/schema/auth.graphqls", Input: `type AuthTokens {
+	{Name: "../schema/auth.graphqls", Input: `type AuthTokens {
     access: String!
     refresh: String!
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/mutation.graphqls", Input: `type Mutation {
+	{Name: "../schema/mutation.graphqls", Input: `type Mutation {
     # For managing the campaign
     campaignCreate(userId: ID!, input: CampaignInput): Campaign!
     campaignUpdate(id: ID!, input: CampaignInput): Campaign!
@@ -668,14 +668,14 @@ var sources = []*ast.Source{
 
     userRegister(input: NewUserInput!): User!
 }`, BuiltIn: false},
-	{Name: "../graph/schema/query.graphqls", Input: `type Query {
+	{Name: "../schema/query.graphqls", Input: `type Query {
     campaign(id: ID!): Campaign!
     user(id: ID!): User!
     login(email: String!, password: String!): AuthTokens!
     refresh(refreshToken: String!): AuthTokens!
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/campaign.graphqls", Input: `type Campaign {
+	{Name: "../schema/types/campaign.graphqls", Input: `type Campaign {
     id: ID!
     campaignNodes: [CampaignNode!]!
     owner: User!
@@ -701,7 +701,7 @@ input CampaignInput {
     notes: [String!]
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/campaign_node.graphqls", Input: `type CampaignNode {
+	{Name: "../schema/types/campaign_node.graphqls", Input: `type CampaignNode {
     id: ID!
     title: String!
     campaign: Campaign!
@@ -723,7 +723,7 @@ input CampaignNodeInput {
     notes: [String!]
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/transition.graphqls", Input: `type Transition {
+	{Name: "../schema/types/transition.graphqls", Input: `type Transition {
     id: ID!
     title: String!
     description: String
@@ -755,7 +755,7 @@ input TransitionInput {
     transitionType: [TransitionType!]
 }
 `, BuiltIn: false},
-	{Name: "../graph/schema/types/user.graphqls", Input: `type User {
+	{Name: "../schema/types/user.graphqls", Input: `type User {
     id: ID!
     name: String!
     email: String!

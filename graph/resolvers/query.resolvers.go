@@ -8,8 +8,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"nodeBasedPlanner/auth"
-	"nodeBasedPlanner/generated"
+	"nodeBasedPlanner/graph/auth"
+	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
 
 	"github.com/uptrace/bun"
@@ -60,7 +60,7 @@ func (r *queryResolver) Refresh(ctx context.Context, refreshToken string) (*mode
 	panic(fmt.Errorf("not implemented: Refresh - refresh"))
 }
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Query returns generated1.QueryResolver implementation.
+func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }

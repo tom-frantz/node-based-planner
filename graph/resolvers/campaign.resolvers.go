@@ -5,7 +5,7 @@ package resolvers
 
 import (
 	"context"
-	"nodeBasedPlanner/generated"
+	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
 
 	"github.com/uptrace/bun"
@@ -93,7 +93,7 @@ func (r *campaignResolver) Players(ctx context.Context, obj *model.Campaign) ([]
 	return users, nil
 }
 
-// Campaign returns generated.CampaignResolver implementation.
-func (r *Resolver) Campaign() generated.CampaignResolver { return &campaignResolver{r} }
+// Campaign returns generated1.CampaignResolver implementation.
+func (r *Resolver) Campaign() generated1.CampaignResolver { return &campaignResolver{r} }
 
 type campaignResolver struct{ *Resolver }

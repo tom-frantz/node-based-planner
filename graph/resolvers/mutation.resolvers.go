@@ -6,9 +6,9 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	"nodeBasedPlanner/generated"
+	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
-	databaseModel "nodeBasedPlanner/storage/model"
+	databaseModel "nodeBasedPlanner/graph/storage/model"
 )
 
 // CampaignCreate is the resolver for the campaignCreate field.
@@ -181,7 +181,7 @@ func (r *mutationResolver) UserRegister(ctx context.Context, input model.NewUser
 	return &user, nil
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated1.MutationResolver implementation.
+func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }

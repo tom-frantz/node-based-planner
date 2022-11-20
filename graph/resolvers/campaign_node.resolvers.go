@@ -5,9 +5,9 @@ package resolvers
 
 import (
 	"context"
-	"nodeBasedPlanner/generated"
+	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
-	databaseModel "nodeBasedPlanner/storage/model"
+	databaseModel "nodeBasedPlanner/graph/storage/model"
 
 	"github.com/uptrace/bun"
 )
@@ -38,7 +38,7 @@ func (r *campaignNodeResolver) Transitions(ctx context.Context, obj *model.Campa
 	return transitions, nil
 }
 
-// CampaignNode returns generated.CampaignNodeResolver implementation.
-func (r *Resolver) CampaignNode() generated.CampaignNodeResolver { return &campaignNodeResolver{r} }
+// CampaignNode returns generated1.CampaignNodeResolver implementation.
+func (r *Resolver) CampaignNode() generated1.CampaignNodeResolver { return &campaignNodeResolver{r} }
 
 type campaignNodeResolver struct{ *Resolver }

@@ -4,8 +4,8 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"log"
 	"net/http"
-	"nodeBasedPlanner/generated"
-	"nodeBasedPlanner/storage/database"
+	"nodeBasedPlanner/graph/generated"
+	database2 "nodeBasedPlanner/graph/storage/database"
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -25,10 +25,10 @@ func main() {
 		port = defaultPort
 	}
 
-	db := database.BunDb(os.Getenv("DB_PW"))
+	db := database2.BunDb(os.Getenv("DB_PW"))
 	db.AddQueryHook(bundebug.NewQueryHook())
 
-	graphResolver := database.NewResolver(db)
+	graphResolver := database2.NewResolver(db)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graphResolver}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
