@@ -7,7 +7,6 @@ import (
 	"context"
 	"nodeBasedPlanner/generated"
 	"nodeBasedPlanner/graph/model"
-	databaseModel "nodeBasedPlanner/storage/model"
 
 	"github.com/uptrace/bun"
 )
@@ -16,7 +15,7 @@ import (
 func (r *userResolver) Campaigns(ctx context.Context, obj *model.User) ([]*model.Campaign, error) {
 	gamerCampaigns := r.Db.
 		NewSelect().
-		Model((*databaseModel.Gamer)(nil)).
+		Model((*model.Gamer)(nil)).
 		Column("campaign_id").
 		Where("? = ?", bun.Ident("user_id"), obj.ID)
 

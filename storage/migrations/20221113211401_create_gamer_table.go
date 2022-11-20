@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/uptrace/bun"
 	model2 "nodeBasedPlanner/graph/model"
-	"nodeBasedPlanner/storage/model"
 )
 
 func init() {
@@ -19,7 +18,7 @@ func init() {
 
 		_, err = db.
 			NewCreateTable().
-			Model((*model.Gamer)(nil)).
+			Model((*model2.Gamer)(nil)).
 			WithForeignKeys().
 			Exec(ctx)
 		if err != nil {
@@ -32,7 +31,7 @@ func init() {
 
 		db.
 			NewDropTable().
-			Model((*model.Gamer)(nil)).
+			Model((*model2.Gamer)(nil)).
 			Exec(ctx)
 
 		db.ExecContext(ctx, "DROP TYPE gamer_role")

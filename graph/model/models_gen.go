@@ -20,7 +20,10 @@ type CampaignInput struct {
 }
 
 type CampaignNodeInput struct {
-	Title *string `json:"title"`
+	Title       *string  `json:"title"`
+	Label       *string  `json:"label"`
+	Description *string  `json:"description"`
+	Notes       []string `json:"notes"`
 }
 
 type NewUserInput struct {
@@ -30,11 +33,11 @@ type NewUserInput struct {
 }
 
 type TransitionInput struct {
-	Title          *string         `json:"title"`
-	Description    *string         `json:"description"`
-	FromNode       *string         `json:"fromNode"`
-	ToNode         *string         `json:"toNode"`
-	TransitionType *TransitionType `json:"transitionType"`
+	Title          *string          `json:"title"`
+	Description    *string          `json:"description"`
+	FromNode       *string          `json:"fromNode"`
+	ToNode         *string          `json:"toNode"`
+	TransitionType []TransitionType `json:"transitionType"`
 }
 
 type PlayerType string

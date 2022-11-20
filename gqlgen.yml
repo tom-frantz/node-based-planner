@@ -78,3 +78,15 @@ models:
         resolver: true
       campaignNodes:
         resolver: true
+  CampaignNode:
+    fields:
+      transitions:
+        resolver: true
+      campaign:
+        resolver: true
+  Transition:
+    fields:
+      to:
+        resolver: true
+      from:
+        resolver: true

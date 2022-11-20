@@ -6,7 +6,7 @@ type Transition {
     from: CampaignNode!
     to: CampaignNode!
 
-    transitionType: TransitionType!
+    transitionType: [TransitionType!]!
     description: String!
 }
 
@@ -27,5 +27,5 @@ input TransitionInput {
     fromNode: ID
     toNode: ID
 
-    transitionType: TransitionType
+    transitionType: [TransitionType!]
 }

@@ -15,4 +15,7 @@ type CampaignNode {
 
 input CampaignNodeInput {
     title: String
+    label: String
+    description: String
+    notes: [String!]
 }

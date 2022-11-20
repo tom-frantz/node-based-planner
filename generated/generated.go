@@ -37,8 +37,10 @@ type Config struct {
 
 type ResolverRoot interface {
 	Campaign() CampaignResolver
+	CampaignNode() CampaignNodeResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Transition() TransitionResolver
 	User() UserResolver
 }
 
@@ -120,6 +122,9 @@ type CampaignResolver interface {
 	Gms(ctx context.Context, obj *model.Campaign) ([]*model.User, error)
 	Players(ctx context.Context, obj *model.Campaign) ([]*model.User, error)
 }
+type CampaignNodeResolver interface {
+	Campaign(ctx context.Context, obj *model.CampaignNode) (*model.Campaign, error)
+}
 type MutationResolver interface {
 	CampaignCreate(ctx context.Context, userID string, input *model.CampaignInput) (*model.Campaign, error)
 	CampaignUpdate(ctx context.Context, id string, input *model.CampaignInput) (*model.Campaign, error)
@@ -140,6 +145,10 @@ type QueryResolver interface {
 	User(ctx context.Context, id string) (*model.User, error)
 	Login(ctx context.Context, email string, password string) (*model.AuthTokens, error)
 	Refresh(ctx context.Context, refreshToken string) (*model.AuthTokens, error)
+}
+type TransitionResolver interface {
+	From(ctx context.Context, obj *model.Transition) (*model.CampaignNode, error)
+	To(ctx context.Context, obj *model.Transition) (*model.CampaignNode, error)
 }
 type UserResolver interface {
 	Campaigns(ctx context.Context, obj *model.User) ([]*model.Campaign, error)
@@ -707,6 +716,9 @@ input CampaignInput {
 
 input CampaignNodeInput {
     title: String
+    label: String
+    description: String
+    notes: [String!]
 }
 `, BuiltIn: false},
 	{Name: "../graph/schema/types/transition.graphqls", Input: `type Transition {
@@ -717,7 +729,7 @@ input CampaignNodeInput {
     from: CampaignNode!
     to: CampaignNode!
 
-    transitionType: TransitionType!
+    transitionType: [TransitionType!]!
     description: String!
 }
 
@@ -738,7 +750,7 @@ input TransitionInput {
     fromNode: ID
     toNode: ID
 
-    transitionType: TransitionType
+    transitionType: [TransitionType!]
 }
 `, BuiltIn: false},
 	{Name: "../graph/schema/types/user.graphqls", Input: `type User {
@@ -1747,7 +1759,7 @@ func (ec *executionContext) _CampaignNode_campaign(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Campaign, nil
+		return ec.resolvers.CampaignNode().Campaign(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1768,8 +1780,8 @@ func (ec *executionContext) fieldContext_CampaignNode_campaign(ctx context.Conte
 	fc = &graphql.FieldContext{
 		Object:     "CampaignNode",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3456,7 +3468,7 @@ func (ec *executionContext) _Transition_from(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.From, nil
+		return ec.resolvers.Transition().From(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3477,8 +3489,8 @@ func (ec *executionContext) fieldContext_Transition_from(ctx context.Context, fi
 	fc = &graphql.FieldContext{
 		Object:     "Transition",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3518,7 +3530,7 @@ func (ec *executionContext) _Transition_to(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.To, nil
+		return ec.resolvers.Transition().To(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3539,8 +3551,8 @@ func (ec *executionContext) fieldContext_Transition_to(ctx context.Context, fiel
 	fc = &graphql.FieldContext{
 		Object:     "Transition",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3592,9 +3604,9 @@ func (ec *executionContext) _Transition_transitionType(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.TransitionType)
+	res := resTmp.([]model.TransitionType)
 	fc.Result = res
-	return ec.marshalNTransitionType2nodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, field.Selections, res)
+	return ec.marshalNTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Transition_transitionType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5672,7 +5684,7 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title"}
+	fieldsInOrder := [...]string{"title", "label", "description", "notes"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5684,6 +5696,30 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "label":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
+			it.Label, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			it.Notes, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5787,7 +5823,7 @@ func (ec *executionContext) unmarshalInputTransitionInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transitionType"))
-			it.TransitionType, err = ec.unmarshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, v)
+			it.TransitionType, err = ec.unmarshalOTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5981,42 +6017,55 @@ func (ec *executionContext) _CampaignNode(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._CampaignNode_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 
 			out.Values[i] = ec._CampaignNode_title(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "campaign":
+			field := field
 
-			out.Values[i] = ec._CampaignNode_campaign(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignNode_campaign(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "visited":
 
 			out.Values[i] = ec._CampaignNode_visited(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "transit":
 
 			out.Values[i] = ec._CampaignNode_transit(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "label":
 
 			out.Values[i] = ec._CampaignNode_label(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 
@@ -6027,7 +6076,7 @@ func (ec *executionContext) _CampaignNode(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._CampaignNode_notes(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -6336,42 +6385,68 @@ func (ec *executionContext) _Transition(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._Transition_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 
 			out.Values[i] = ec._Transition_title(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "from":
+			field := field
 
-			out.Values[i] = ec._Transition_from(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transition_from(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "to":
+			field := field
 
-			out.Values[i] = ec._Transition_to(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transition_to(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "transitionType":
 
 			out.Values[i] = ec._Transition_transitionType(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 
 			out.Values[i] = ec._Transition_description(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7054,6 +7129,67 @@ func (ec *executionContext) marshalNTransitionType2nodeBasedPlannerᚋgraphᚋmo
 	return v
 }
 
+func (ec *executionContext) unmarshalNTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx context.Context, v interface{}) ([]model.TransitionType, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]model.TransitionType, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTransitionType2nodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []model.TransitionType) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTransitionType2nodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNUser2nodeBasedPlannerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -7485,20 +7621,71 @@ func (ec *executionContext) unmarshalOTransitionInput2ᚖnodeBasedPlannerᚋgrap
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx context.Context, v interface{}) (*model.TransitionType, error) {
+func (ec *executionContext) unmarshalOTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx context.Context, v interface{}) ([]model.TransitionType, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(model.TransitionType)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]model.TransitionType, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTransitionType2nodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
-func (ec *executionContext) marshalOTransitionType2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx context.Context, sel ast.SelectionSet, v *model.TransitionType) graphql.Marshaler {
+func (ec *executionContext) marshalOTransitionType2ᚕnodeBasedPlannerᚋgraphᚋmodelᚐTransitionTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []model.TransitionType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return v
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTransitionType2nodeBasedPlannerᚋgraphᚋmodelᚐTransitionType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

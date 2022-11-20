@@ -7,7 +7,6 @@ import (
 	"context"
 	"nodeBasedPlanner/generated"
 	"nodeBasedPlanner/graph/model"
-	databaseModel "nodeBasedPlanner/storage/model"
 
 	"github.com/uptrace/bun"
 )
@@ -42,7 +41,7 @@ func (r *campaignResolver) Owner(ctx context.Context, obj *model.Campaign) (*mod
 func (r *campaignResolver) Gms(ctx context.Context, obj *model.Campaign) ([]*model.User, error) {
 	playersInCampaign := r.Db.
 		NewSelect().
-		Model((*databaseModel.Gamer)(nil)).
+		Model((*model.Gamer)(nil)).
 		Column("user_id").
 		WhereGroup("AND", func(q *bun.SelectQuery) *bun.SelectQuery {
 			return q.Where("? = ?", bun.Ident("campaign_id"), obj.ID)
@@ -70,7 +69,7 @@ func (r *campaignResolver) Gms(ctx context.Context, obj *model.Campaign) ([]*mod
 func (r *campaignResolver) Players(ctx context.Context, obj *model.Campaign) ([]*model.User, error) {
 	playersInCampaign := r.Db.
 		NewSelect().
-		Model((*databaseModel.Gamer)(nil)).
+		Model((*model.Gamer)(nil)).
 		Column("user_id").
 		WhereGroup("AND", func(q *bun.SelectQuery) *bun.SelectQuery {
 			return q.Where("? = ?", bun.Ident("campaign_id"), obj.ID)

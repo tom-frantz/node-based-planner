@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/uptrace/bun"
 )
 
@@ -22,15 +23,51 @@ type Campaign struct {
 	Notes []string `json:"notes" bun:"notes,array"`
 }
 
-func (campaign *Campaign) CreateCampaign(ctx context.Context, db *bun.DB) (err error) {
-	_, err = db.
-		NewInsert().
-		Model(campaign).
-		Exec(ctx)
+type CampaignCreateInput struct {
+	UserId string
+	Input  *CampaignInput
+}
+
+func (campaign *Campaign) CreateFromInput(simpleInput interface{}, ctx context.Context, query *bun.InsertQuery) (error error) {
+	createInput := simpleInput.(*CampaignCreateInput)
+	input := createInput.Input
+	userId := createInput.UserId
+
+	if input.Title == nil || *input.Title == "" {
+		graphql.AddErrorf(ctx, "'title' is a required field, but was not set")
+	}
+
+	errors := graphql.GetErrors(ctx)
+	if len(errors) > 0 {
+		return
+	}
+
+	campaign.Title = *input.Title
+	campaign.OwnerId = userId
+	campaign.Description = input.Description
+	campaign.Notes = input.Notes
+
 	return
 }
 
-func (campaign *Campaign) SelectCampaignByPk(ctx context.Context, db *bun.DB) (err error) {
-	err = db.NewSelect().Model(campaign).WherePK().Scan(ctx)
-	return
+func (campaign *Campaign) ApplyInput(simpleInput interface{}, ctx context.Context, query *bun.UpdateQuery) error {
+	input := simpleInput.(*CampaignInput)
+
+	if input.Title != nil && *input.Title != "" {
+		println("Updating Title ... ", input.Title)
+		campaign.Title = *input.Title
+	} else {
+		query.ExcludeColumn("title")
+	}
+
+	if input.Notes != nil {
+		println("Updating notes ...")
+		campaign.Notes = input.Notes
+	}
+
+	if input.Description != nil {
+		campaign.Description = input.Description
+	}
+
+	return nil
 }
