@@ -25,16 +25,27 @@ type CampaignInput struct {
 }
 
 type CampaignNodeInput struct {
-	Title       *string  `json:"title"`
-	Label       *string  `json:"label"`
-	Description *string  `json:"description"`
-	Notes       []string `json:"notes"`
+	Title       *string        `json:"title"`
+	Label       *string        `json:"label"`
+	Position    *PositionInput `json:"position"`
+	Description *string        `json:"description"`
+	Notes       []string       `json:"notes"`
 }
 
 type NewUserInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+}
+
+type Position struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
+
+type PositionInput struct {
+	X *int `json:"x"`
+	Y *int `json:"y"`
 }
 
 type TransitionInput struct {

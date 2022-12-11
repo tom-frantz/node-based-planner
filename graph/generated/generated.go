@@ -75,6 +75,7 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		Label       func(childComplexity int) int
 		Notes       func(childComplexity int) int
+		Position    func(childComplexity int) int
 		Title       func(childComplexity int) int
 		Transitions func(childComplexity int) int
 		Visited     func(childComplexity int) int
@@ -96,6 +97,11 @@ type ComplexityRoot struct {
 		TransitionDelete     func(childComplexity int, id string) int
 		TransitionUpdate     func(childComplexity int, id string, input *model.TransitionInput) int
 		UserRegister         func(childComplexity int, input model.NewUserInput) int
+	}
+
+	Position struct {
+		X func(childComplexity int) int
+		Y func(childComplexity int) int
 	}
 
 	Query struct {
@@ -132,6 +138,8 @@ type CampaignNodeResolver interface {
 	Campaign(ctx context.Context, obj *model.CampaignNode) (*model.Campaign, error)
 
 	Transitions(ctx context.Context, obj *model.CampaignNode) ([]*model.Transition, error)
+
+	Position(ctx context.Context, obj *model.CampaignNode) (*model.Position, error)
 }
 type MutationResolver interface {
 	CampaignCreate(ctx context.Context, userID string, input *model.CampaignInput) (*model.Campaign, error)
@@ -296,6 +304,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CampaignNode.Notes(childComplexity), true
+
+	case "CampaignNode.position":
+		if e.complexity.CampaignNode.Position == nil {
+			break
+		}
+
+		return e.complexity.CampaignNode.Position(childComplexity), true
 
 	case "CampaignNode.title":
 		if e.complexity.CampaignNode.Title == nil {
@@ -493,6 +508,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UserRegister(childComplexity, args["input"].(model.NewUserInput)), true
 
+	case "Position.x":
+		if e.complexity.Position.X == nil {
+			break
+		}
+
+		return e.complexity.Position.X(childComplexity), true
+
+	case "Position.y":
+		if e.complexity.Position.Y == nil {
+			break
+		}
+
+		return e.complexity.Position.Y(childComplexity), true
+
 	case "Query.campaign":
 		if e.complexity.Query.Campaign == nil {
 			break
@@ -605,6 +634,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCampaignInput,
 		ec.unmarshalInputCampaignNodeInput,
 		ec.unmarshalInputNewUserInput,
+		ec.unmarshalInputPositionInput,
 		ec.unmarshalInputTransitionInput,
 	)
 	first := true
@@ -742,17 +772,28 @@ input CampaignInput {
 
     # Node information
     label: String!  # A shorter identifier than the title, for quick identification by the end users.
+    position: Position!
     description: String
     notes: [String!]!
+}
+
+type Position {
+    x: Int!
+    y: Int!
 }
 
 input CampaignNodeInput {
     title: String
     label: String
+    position: PositionInput
     description: String
     notes: [String!]
 }
-`, BuiltIn: false},
+
+input PositionInput {
+    x: Int,
+    y: Int
+}`, BuiltIn: false},
 	{Name: "../schema/types/transition.graphqls", Input: `type Transition {
     id: ID!
     title: String!
@@ -1476,6 +1517,8 @@ func (ec *executionContext) fieldContext_Campaign_campaignNodes(ctx context.Cont
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2084,6 +2127,56 @@ func (ec *executionContext) fieldContext_CampaignNode_label(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _CampaignNode_position(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CampaignNode_position(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CampaignNode().Position(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Position)
+	fc.Result = res
+	return ec.marshalNPosition2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐPosition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CampaignNode_position(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignNode",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "x":
+				return ec.fieldContext_Position_x(ctx, field)
+			case "y":
+				return ec.fieldContext_Position_y(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CampaignNode_description(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CampaignNode_description(ctx, field)
 	if err != nil {
@@ -2658,6 +2751,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeCreate(ctx context
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2731,6 +2826,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeUpdate(ctx context
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2804,6 +2901,8 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeDelete(ctx context
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -3204,6 +3303,94 @@ func (ec *executionContext) fieldContext_Mutation_refresh(ctx context.Context, f
 				return ec.fieldContext_AuthResponse_user(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AuthResponse", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Position_x(ctx context.Context, field graphql.CollectedField, obj *model.Position) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Position_x(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.X, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Position_x(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Position",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Position_y(ctx context.Context, field graphql.CollectedField, obj *model.Position) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Position_y(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Y, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Position_y(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Position",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3710,6 +3897,8 @@ func (ec *executionContext) fieldContext_Transition_from(ctx context.Context, fi
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -3772,6 +3961,8 @@ func (ec *executionContext) fieldContext_Transition_to(ctx context.Context, fiel
 				return ec.fieldContext_CampaignNode_transitions(ctx, field)
 			case "label":
 				return ec.fieldContext_CampaignNode_label(ctx, field)
+			case "position":
+				return ec.fieldContext_CampaignNode_position(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -5845,7 +6036,7 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "label", "description", "notes"}
+	fieldsInOrder := [...]string{"title", "label", "position", "description", "notes"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5865,6 +6056,14 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
 			it.Label, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "position":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
+			it.Position, err = ec.unmarshalOPositionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐPositionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5925,6 +6124,42 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
 			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPositionInput(ctx context.Context, obj interface{}) (model.PositionInput, error) {
+	var it model.PositionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"x", "y"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "x":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("x"))
+			it.X, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "y":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("y"))
+			it.Y, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6276,6 +6511,26 @@ func (ec *executionContext) _CampaignNode(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "position":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CampaignNode_position(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "description":
 
 			out.Values[i] = ec._CampaignNode_description(ctx, field, obj)
@@ -6448,6 +6703,41 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_refresh(ctx, field)
 			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var positionImplementors = []string{"Position"}
+
+func (ec *executionContext) _Position(ctx context.Context, sel ast.SelectionSet, obj *model.Position) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, positionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Position")
+		case "x":
+
+			out.Values[i] = ec._Position_x(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "y":
+
+			out.Values[i] = ec._Position_y(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -7210,6 +7500,21 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNNewUserInput2nodeBasedPlannerᚋgraphᚋmodelᚐNewUserInput(ctx context.Context, v interface{}) (model.NewUserInput, error) {
 	res, err := ec.unmarshalInputNewUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7223,6 +7528,20 @@ func (ec *executionContext) unmarshalNPlayerType2nodeBasedPlannerᚋgraphᚋmode
 
 func (ec *executionContext) marshalNPlayerType2nodeBasedPlannerᚋgraphᚋmodelᚐPlayerType(ctx context.Context, sel ast.SelectionSet, v model.PlayerType) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNPosition2nodeBasedPlannerᚋgraphᚋmodelᚐPosition(ctx context.Context, sel ast.SelectionSet, v model.Position) graphql.Marshaler {
+	return ec._Position(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPosition2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐPosition(ctx context.Context, sel ast.SelectionSet, v *model.Position) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Position(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -7768,6 +8087,30 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	}
 	res := graphql.MarshalID(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOPositionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐPositionInput(ctx context.Context, v interface{}) (*model.PositionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPositionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

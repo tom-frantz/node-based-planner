@@ -14,7 +14,7 @@ import {
     getRefreshToken,
     REFRESH_TOKEN_KEY,
 } from "../auth/tokens";
-import { REFRESH_MUTATION_NAME } from "./queries/auth";
+import { REFRESH_MUTATION_NAME } from "./mutations/auth";
 
 let server = "http://localhost:8080";
 let endpoint = `query`;

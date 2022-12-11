@@ -38,6 +38,14 @@ func (r *campaignNodeResolver) Transitions(ctx context.Context, obj *model.Campa
 	return transitions, nil
 }
 
+// Position is the resolver for the position field.
+func (r *campaignNodeResolver) Position(ctx context.Context, obj *model.CampaignNode) (*model.Position, error) {
+	return &model.Position{
+		X: obj.PositionX,
+		Y: obj.PositionY,
+	}, nil
+}
+
 // CampaignNode returns generated1.CampaignNodeResolver implementation.
 func (r *Resolver) CampaignNode() generated1.CampaignNodeResolver { return &campaignNodeResolver{r} }
 

@@ -84,6 +84,8 @@ models:
         resolver: true
       campaign:
         resolver: true
+      position:
+        resolver: true
   Transition:
     fields:
       to:

@@ -1,33 +1,67 @@
-import { useRouter } from "next/router";
-import { useQuery } from "@apollo/client";
-import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
+import {useRouter} from "next/router";
+import {useMutation, useQuery} from "@apollo/client";
+import {applyNodeChanges, Background, Controls, MiniMap, Node, NodeChange, ReactFlow} from "reactflow";
 
-import { REACT_FLOW_NODE_TYPES, toFlowNode } from "lib/campaign/flow";
-import { CampaignDocument } from "generated/graphql";
-import { Grid, GridItem, useTheme } from "@chakra-ui/react";
+import {REACT_FLOW_NODE_TYPES, toFlowNode} from "lib/campaign/flow";
+import {CampaignDocument, UpdateCampaignNodeDocument} from "generated/graphql";
+import {Grid, GridItem, Text, useTheme} from "@chakra-ui/react";
 
 import "reactflow/dist/style.css";
-import campaignNode from "../../components/campaign/campaignNode/CampaignNode";
+import {useCallback, useEffect, useState} from "react";
 
-export interface CampaignPageProps {}
+export interface CampaignPageProps {
+}
 
 const CampaignPage = (props: CampaignPageProps) => {
     const router = useRouter();
     const theme = useTheme();
-    const { id: campaignId } = router.query;
+    const {id: campaignId} = router.query;
 
-    const { data, loading, error } = useQuery(CampaignDocument, {
-        variables: { id: campaignId as string },
+
+    const {data, loading, error} = useQuery(CampaignDocument, {
+        variables: {id: campaignId as string},
         skip: campaignId === undefined,
     });
+    let updateTimeout: number | undefined = undefined;
+    const [updateNode, {}] = useMutation(UpdateCampaignNodeDocument);
 
-    const nodes =
-        data?.campaign.campaignNodes.map((campaignNode, index) => {
-            const flowNode = toFlowNode(campaignNode);
-            flowNode.position = { x: index * 40, y: index * 40 };
+    const [nodes, setNodes] = useState<Node[]>([])
+    const onNodesChange = useCallback(
+        (changes: NodeChange[]) => {
+            if (updateTimeout !== undefined) {
+                clearTimeout(updateTimeout);
+            }
 
-            return flowNode;
-        }) ?? [];
+            updateTimeout = setTimeout(() => {
+                console.log("TIMER UPDATING ")
+                nodes.forEach((node) => {
+                    updateNode({
+                        variables: {
+                            id: node.id,
+                            input: {
+                                position: node.position
+                            }
+                        }
+                    }).then(console.log).catch(console.log)
+                })
+            }, 1000) as unknown as number;
+
+            setNodes((nds) => applyNodeChanges(changes, nds));
+        },
+        []
+    );
+
+    useEffect(() => {
+        if (!data) {
+            return
+        }
+        const nextNodes = data.campaign.campaignNodes.map((campaignNode, index) => {
+            return toFlowNode(campaignNode);
+        })
+
+        setNodes(nextNodes)
+    }, [data])
+
 
     const edges =
         data?.campaign.campaignNodes
@@ -35,6 +69,12 @@ const CampaignPage = (props: CampaignPageProps) => {
                 return campaignNode.transitions.map((transition) => {
                     const source = transition.from.id;
                     const target = transition.to.id;
+
+                    // This will remove duplicates from the graph response..
+                    if (campaignNode.id !== source) {
+                        return undefined
+                    }
+
                     return {
                         id: `e-${source}-${target}`,
                         source,
@@ -42,7 +82,9 @@ const CampaignPage = (props: CampaignPageProps) => {
                     };
                 });
             })
-            .flat() ?? [];
+            .flat()
+            // Filter out any undefined items from before
+            .filter((item) => item !== undefined) ?? [];
 
     return (
         <Grid
@@ -52,23 +94,23 @@ const CampaignPage = (props: CampaignPageProps) => {
             gap={4}
         >
             <GridItem colSpan={1}>
-                <p>id: {campaignId}</p>
-                <p>data: {JSON.stringify(data)}</p>
+                <Text>id: {campaignId}</Text>
+                <Text>data: {JSON.stringify(data)}</Text>
             </GridItem>
             <GridItem colSpan={1}>
                 <ReactFlow
-                    style={{ border: "5px solid red" }}
+                    style={{border: "5px solid red", fontSize: "6px"}}
                     nodes={nodes}
                     edges={edges}
                     fitView
                     nodeTypes={REACT_FLOW_NODE_TYPES}
-                    // onNodesChange={onNodesChange}
+                    onNodesChange={onNodesChange}
                     // onEdgesChange={onEdgesChange}
                     // onConnect={onConnect}
                 >
-                    <MiniMap position={"bottom-right"} />
-                    <Controls />
-                    <Background />
+                    <MiniMap position={"bottom-right"}/>
+                    <Controls/>
+                    <Background/>
                 </ReactFlow>
             </GridItem>
         </Grid>

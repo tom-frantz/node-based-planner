@@ -6,11 +6,11 @@ export const REACT_FLOW_NODE_TYPES = {
     campaignNode: CampaignNode,
 };
 
-export const toFlowNode = (node: { id: string }): Node => {
+export const toFlowNode = (node: { id: string, position: {x: number, y: number} }): Node => {
     return {
         id: node.id,
         type: "campaignNode",
-        position: { x: 10, y: 10 },
+        position: node.position,
         data: node,
     };
 };

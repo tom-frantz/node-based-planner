@@ -22,6 +22,9 @@ type CampaignNode struct {
 	Transitions []*Transition `json:"transitions" bun:"-"`
 
 	Label       string   `json:"label" bun:"label,notnull"`
+	Position    Position `json:"position" bun:"-"`
+	PositionX   int      `bun:"position_x,notnull"`
+	PositionY   int      `bun:"position_x,notnull"`
 	Description *string  `json:"description" bun:"description"`
 	Notes       []string `json:"notes" bun:"notes,array"`
 }
@@ -44,6 +47,10 @@ func (campaignNode *CampaignNode) CreateFromInput(simpleInput interface{}, ctx c
 		graphql.AddErrorf(ctx, "'label' is a required field, but was not set")
 	}
 
+	if input.Position.X == nil || input.Position.Y == nil {
+		graphql.AddErrorf(ctx, "'position.X' and 'position.Y' are required fields, but was not set")
+	}
+
 	errors := graphql.GetErrors(ctx)
 	if len(errors) > 0 {
 		return fmt.Errorf("input validation error")
@@ -54,12 +61,15 @@ func (campaignNode *CampaignNode) CreateFromInput(simpleInput interface{}, ctx c
 	campaignNode.Label = *input.Label
 	campaignNode.Description = input.Description
 	campaignNode.Notes = input.Notes
+	campaignNode.PositionX = *input.Position.X
+	campaignNode.PositionY = *input.Position.Y
 
 	return
 }
 
 func (campaignNode *CampaignNode) ApplyInput(simpleInput interface{}, ctx context.Context, query *bun.UpdateQuery) (err error) {
 	input := simpleInput.(*CampaignNodeInput)
+	println(input.Position)
 
 	if input.Title != nil && *input.Title != "" {
 		campaignNode.Title = *input.Title
@@ -82,13 +92,13 @@ func (campaignNode *CampaignNode) ApplyInput(simpleInput interface{}, ctx contex
 		campaignNode.Description = input.Description
 	}
 
+	if input.Position.X != nil {
+		campaignNode.PositionX = *input.Position.X
+	}
+
+	if input.Position.Y != nil {
+		campaignNode.PositionX = *input.Position.X
+	}
+
 	return
 }
-
-//func (campaignNode *CampaignNode) ApplyInput(input *CampaignNodeInput) *CampaignNode {
-//	if input.Title != nil {
-//		campaignNode.Title = *input.Title
-//	}
-//
-//	return campaignNode
-//}

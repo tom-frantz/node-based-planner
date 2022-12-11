@@ -21,6 +21,11 @@ const CAMPAIGN = gql`
 
                 title
                 description
+                
+                position {
+                    x
+                    y
+                }
 
                 transitions {
                     to {
