@@ -2,3 +2,9 @@ type AuthTokens {
     access: String!
     refresh: String!
 }
+
+
+type AuthResponse {
+    tokens: AuthTokens!
+    user: User!
+}

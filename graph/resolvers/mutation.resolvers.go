@@ -5,9 +5,11 @@ package resolvers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
+	"nodeBasedPlanner/graph/security"
 	databaseModel "nodeBasedPlanner/graph/storage/model"
 )
 
@@ -179,6 +181,47 @@ func (r *mutationResolver) UserRegister(ctx context.Context, input model.NewUser
 	}
 
 	return &user, nil
+}
+
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthResponse, error) {
+	user := &model.User{Password: password, Email: email}
+	if err := user.UserByLogin(ctx, r.Db); err != nil {
+		return nil, errors.New("invalid email or password")
+	}
+
+	authTokens, err := security.NewTokens(user)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &model.AuthResponse{
+		Tokens: authTokens,
+		User:   user,
+	}
+
+	return response, nil
+}
+
+// Refresh is the resolver for the refresh field.
+func (r *mutationResolver) Refresh(ctx context.Context) (*model.AuthResponse, error) {
+	user := security.UserForContext(ctx)
+
+	if user == nil {
+		return nil, fmt.Errorf("oof that sucks dude.")
+	}
+
+	authTokens, err := security.NewTokens(user)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &model.AuthResponse{
+		Tokens: authTokens,
+		User:   user,
+	}
+
+	return response, nil
 }
 
 // Mutation returns generated1.MutationResolver implementation.

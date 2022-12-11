@@ -1,6 +1,5 @@
 type Query {
+    me: User!
     campaign(id: ID!): Campaign!
     user(id: ID!): User!
-    login(email: String!, password: String!): AuthTokens!
-    refresh(refreshToken: String!): AuthTokens!
 }

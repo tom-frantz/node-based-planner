@@ -17,4 +17,7 @@ type Mutation {
     transitionDelete(id: ID!): Transition!
 
     userRegister(input: NewUserInput!): User!
+
+    login(email: String!, password: String!): AuthResponse!
+    refresh: AuthResponse!
 }

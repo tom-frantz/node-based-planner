@@ -8,16 +8,35 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"nodeBasedPlanner/graph/auth"
 	generated1 "nodeBasedPlanner/graph/generated"
 	"nodeBasedPlanner/graph/model"
+	"nodeBasedPlanner/graph/security"
+	model2 "nodeBasedPlanner/graph/storage/model"
 
 	"github.com/uptrace/bun"
 )
 
+// Me is the resolver for the me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	user := security.UserForContext(ctx)
+
+	if user == nil {
+		return nil, fmt.Errorf("oof")
+	}
+
+	return user, nil
+}
+
 // Campaign is the resolver for the campaign field.
 func (r *queryResolver) Campaign(ctx context.Context, id string) (*model.Campaign, error) {
-	panic(fmt.Errorf("not implemented: Campaign - campaign"))
+	campaign := &model.Campaign{ID: id}
+
+	err := (&model2.SimpleModel{Model: campaign}).SelectByPk(ctx, r.Db)
+	if err != nil {
+		return nil, err
+	}
+
+	return campaign, nil
 }
 
 // User is the resolver for the user field.
@@ -38,26 +57,6 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 	}
 
 	return user, err
-}
-
-// Login is the resolver for the login field.
-func (r *queryResolver) Login(ctx context.Context, email string, password string) (*model.AuthTokens, error) {
-	user := &model.User{Password: password, Email: email}
-	if err := user.UserByLogin(ctx, r.Db); err != nil {
-		return nil, errors.New("invalid email or password")
-	}
-
-	authTokens, err := auth.NewTokens(user)
-	if err != nil {
-		return nil, err
-	}
-
-	return authTokens, nil
-}
-
-// Refresh is the resolver for the refresh field.
-func (r *queryResolver) Refresh(ctx context.Context, refreshToken string) (*model.AuthTokens, error) {
-	panic(fmt.Errorf("not implemented: Refresh - refresh"))
 }
 
 // Query returns generated1.QueryResolver implementation.

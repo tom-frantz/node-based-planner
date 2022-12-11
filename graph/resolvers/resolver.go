@@ -1,6 +1,8 @@
 package resolvers
 
-import "github.com/uptrace/bun"
+import (
+	"github.com/uptrace/bun"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +10,11 @@ import "github.com/uptrace/bun"
 
 type Resolver struct {
 	Db *bun.DB
+}
+
+func NewResolver(db *bun.DB) *Resolver {
+	resolver := Resolver{
+		Db: db,
+	}
+	return &resolver
 }

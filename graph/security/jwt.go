@@ -1,4 +1,4 @@
-package auth
+package security
 
 import (
 	"github.com/golang-jwt/jwt/v4"
@@ -8,8 +8,12 @@ import (
 	"time"
 )
 
-const AccessTokenExpiry = time.Duration(time.Hour * 24)
+const AccessTokenExpiry = time.Duration(time.Minute * 15)
 const RefreshTokenExpiry = time.Duration(time.Hour * 24 * 60)
+
+func JwtSecret() string {
+	return os.Getenv("JWT_SECRET")
+}
 
 func NewAccessToken(user *model.User) (token *jwt.Token) {
 	token = jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
@@ -46,7 +50,7 @@ func NewRefreshToken(user *model.User) (token *jwt.Token) {
 }
 
 func SignToken(token *jwt.Token) (string, error) {
-	signedString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	signedString, err := token.SignedString([]byte(JwtSecret()))
 	if err != nil {
 		return "", err
 	}
