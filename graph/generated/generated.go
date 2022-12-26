@@ -72,6 +72,7 @@ type ComplexityRoot struct {
 	CampaignNode struct {
 		Campaign    func(childComplexity int) int
 		Description func(childComplexity int) int
+		Height      func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Label       func(childComplexity int) int
 		Notes       func(childComplexity int) int
@@ -79,6 +80,7 @@ type ComplexityRoot struct {
 		Title       func(childComplexity int) int
 		Transitions func(childComplexity int) int
 		Visited     func(childComplexity int) int
+		Width       func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -284,6 +286,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CampaignNode.Description(childComplexity), true
 
+	case "CampaignNode.height":
+		if e.complexity.CampaignNode.Height == nil {
+			break
+		}
+
+		return e.complexity.CampaignNode.Height(childComplexity), true
+
 	case "CampaignNode.id":
 		if e.complexity.CampaignNode.ID == nil {
 			break
@@ -332,6 +341,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CampaignNode.Visited(childComplexity), true
+
+	case "CampaignNode.width":
+		if e.complexity.CampaignNode.Width == nil {
+			break
+		}
+
+		return e.complexity.CampaignNode.Width(childComplexity), true
 
 	case "Mutation.campaignChangeOwner":
 		if e.complexity.Mutation.CampaignChangeOwner == nil {
@@ -772,7 +788,11 @@ input CampaignInput {
 
     # Node information
     label: String!  # A shorter identifier than the title, for quick identification by the end users.
+
     position: Position!
+    height: Float!
+    width: Float!
+
     description: String
     notes: [String!]!
 }
@@ -785,7 +805,11 @@ type Position {
 input CampaignNodeInput {
     title: String
     label: String
+
     position: PositionInput
+    width: Float
+    height: Float
+
     description: String
     notes: [String!]
 }
@@ -1519,6 +1543,10 @@ func (ec *executionContext) fieldContext_Campaign_campaignNodes(ctx context.Cont
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2177,6 +2205,94 @@ func (ec *executionContext) fieldContext_CampaignNode_position(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _CampaignNode_height(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CampaignNode_height(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Height, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CampaignNode_height(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignNode",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CampaignNode_width(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CampaignNode_width(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Width, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CampaignNode_width(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CampaignNode",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CampaignNode_description(ctx context.Context, field graphql.CollectedField, obj *model.CampaignNode) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CampaignNode_description(ctx, field)
 	if err != nil {
@@ -2753,6 +2869,10 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeCreate(ctx context
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2828,6 +2948,10 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeUpdate(ctx context
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -2903,6 +3027,10 @@ func (ec *executionContext) fieldContext_Mutation_campaignNodeDelete(ctx context
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -3899,6 +4027,10 @@ func (ec *executionContext) fieldContext_Transition_from(ctx context.Context, fi
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -3963,6 +4095,10 @@ func (ec *executionContext) fieldContext_Transition_to(ctx context.Context, fiel
 				return ec.fieldContext_CampaignNode_label(ctx, field)
 			case "position":
 				return ec.fieldContext_CampaignNode_position(ctx, field)
+			case "height":
+				return ec.fieldContext_CampaignNode_height(ctx, field)
+			case "width":
+				return ec.fieldContext_CampaignNode_width(ctx, field)
 			case "description":
 				return ec.fieldContext_CampaignNode_description(ctx, field)
 			case "notes":
@@ -6036,7 +6172,7 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "label", "position", "description", "notes"}
+	fieldsInOrder := [...]string{"title", "label", "position", "width", "height", "description", "notes"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6064,6 +6200,22 @@ func (ec *executionContext) unmarshalInputCampaignNodeInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
 			it.Position, err = ec.unmarshalOPositionInput2ᚖnodeBasedPlannerᚋgraphᚋmodelᚐPositionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "width":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("width"))
+			it.Width, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "height":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
+			it.Height, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6531,6 +6683,20 @@ func (ec *executionContext) _CampaignNode(ctx context.Context, sel ast.Selection
 				return innerFunc(ctx)
 
 			})
+		case "height":
+
+			out.Values[i] = ec._CampaignNode_height(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "width":
+
+			out.Values[i] = ec._CampaignNode_width(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "description":
 
 			out.Values[i] = ec._CampaignNode_description(ctx, field, obj)

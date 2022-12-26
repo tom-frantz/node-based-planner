@@ -21,10 +21,15 @@ type CampaignNode struct {
 	// TODO
 	Transitions []*Transition `json:"transitions" bun:"-"`
 
-	Label       string   `json:"label" bun:"label,notnull"`
-	Position    Position `json:"position" bun:"-"`
-	PositionX   float64  `bun:"position_x,notnull,type:double precision"`
-	PositionY   float64  `bun:"position_y,notnull,type:double precision"`
+	Label string `json:"label" bun:"label,notnull"`
+
+	Position  Position `json:"position" bun:"-"`
+	PositionX float64  `bun:"position_x,notnull,type:double precision"`
+	PositionY float64  `bun:"position_y,notnull,type:double precision"`
+
+	Height float64 `json:"height" bun:"height,notnull,type:double precision"`
+	Width  float64 `json:"width" bun:"width,notnull,type:double precision"`
+
 	Description *string  `json:"description" bun:"description"`
 	Notes       []string `json:"notes" bun:"notes,array"`
 }
@@ -64,6 +69,9 @@ func (campaignNode *CampaignNode) CreateFromInput(simpleInput interface{}, ctx c
 	campaignNode.PositionX = *input.Position.X
 	campaignNode.PositionY = *input.Position.Y
 
+	campaignNode.Height = *input.Height
+	campaignNode.Width = *input.Width
+
 	return
 }
 
@@ -91,12 +99,23 @@ func (campaignNode *CampaignNode) ApplyInput(simpleInput interface{}, ctx contex
 		campaignNode.Description = input.Description
 	}
 
-	if input.Position.X != nil {
-		campaignNode.PositionX = *input.Position.X
+	if input.Position != nil {
+		if input.Position.X != nil {
+			campaignNode.PositionX = *input.Position.X
+		}
+
+		if input.Position.Y != nil {
+			campaignNode.PositionY = *input.Position.Y
+		}
 	}
 
-	if input.Position.Y != nil {
-		campaignNode.PositionY = *input.Position.Y
+	if input.Height != nil {
+		println("Heightg", *input.Height)
+		campaignNode.Height = *input.Height
+	}
+
+	if input.Width != nil {
+		campaignNode.Width = *input.Width
 	}
 
 	return

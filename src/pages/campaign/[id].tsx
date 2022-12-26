@@ -57,6 +57,7 @@ const CampaignPage = (props: CampaignPageProps) => {
         setNodes((nds) => {
             const changedNodes = applyNodeChanges(changes, nds);
 
+            console.log("HONK", changedNodes)
             updateTimeout = setTimeout(() => {
                 changedNodes.forEach((node) => {
                     updateNode({
@@ -64,6 +65,8 @@ const CampaignPage = (props: CampaignPageProps) => {
                             id: node.id,
                             input: {
                                 position: node.position,
+                                height: node.height,
+                                width: node.width
                             },
                         },
                         // context: {
@@ -80,6 +83,8 @@ const CampaignPage = (props: CampaignPageProps) => {
                                     __typename: "CampaignNode",
 
                                     position: node.position,
+                                    height: node.height,
+                                    width: node.width
                                 },
                             };
                         },

@@ -16,6 +16,8 @@ export const UPDATE_CAMPAIGN_NODE = gql`
                 x
                 y
             }
+            width
+            height
         }
     }
 `

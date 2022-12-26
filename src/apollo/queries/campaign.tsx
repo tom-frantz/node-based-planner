@@ -26,6 +26,8 @@ const CAMPAIGN = gql`
                     x
                     y
                 }
+                width
+                height
 
                 transitions {
                     to {

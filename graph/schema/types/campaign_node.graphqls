@@ -9,7 +9,11 @@ type CampaignNode {
 
     # Node information
     label: String!  # A shorter identifier than the title, for quick identification by the end users.
+
     position: Position!
+    height: Float!
+    width: Float!
+
     description: String
     notes: [String!]!
 }
@@ -22,7 +26,11 @@ type Position {
 input CampaignNodeInput {
     title: String
     label: String
+
     position: PositionInput
+    width: Float
+    height: Float
+
     description: String
     notes: [String!]
 }

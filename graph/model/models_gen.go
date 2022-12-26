@@ -28,6 +28,8 @@ type CampaignNodeInput struct {
 	Title       *string        `json:"title"`
 	Label       *string        `json:"label"`
 	Position    *PositionInput `json:"position"`
+	Width       *float64       `json:"width"`
+	Height      *float64       `json:"height"`
 	Description *string        `json:"description"`
 	Notes       []string       `json:"notes"`
 }

@@ -44,7 +44,8 @@ const theme = extendTheme({
         Heading: {
             variants: {
                 subheading: {
-                    fontFamily: "Megrim, sans-serif",
+
+                    // fontFamily: "Megrim, sans-serif",
                 },
             },
         },
