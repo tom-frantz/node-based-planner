@@ -15,8 +15,8 @@ type CampaignNode {
 }
 
 type Position {
-    x: Int!
-    y: Int!
+    x: Float!
+    y: Float!
 }
 
 input CampaignNodeInput {
@@ -28,6 +28,6 @@ input CampaignNodeInput {
 }
 
 input PositionInput {
-    x: Int,
-    y: Int
+    x: Float,
+    y: Float
 }

@@ -50,7 +50,7 @@ func main() {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graphResolver}))
 	srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		oc := graphql.GetOperationContext(ctx)
-		fmt.Printf("around: %s %s", oc.OperationName, oc.RawQuery)
+		fmt.Printf("around: %s %s %s\n", oc.OperationName, oc.RawQuery, oc.Variables)
 		return next(ctx)
 	})
 	//srv.AddTransport(&transport.Websocket{

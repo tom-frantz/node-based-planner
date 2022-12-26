@@ -1,67 +1,110 @@
-import {useRouter} from "next/router";
-import {useMutation, useQuery} from "@apollo/client";
-import {applyNodeChanges, Background, Controls, MiniMap, Node, NodeChange, ReactFlow} from "reactflow";
+import { useRouter } from "next/router";
+import { useMutation, useQuery } from "@apollo/client";
 
-import {REACT_FLOW_NODE_TYPES, toFlowNode} from "lib/campaign/flow";
-import {CampaignDocument, UpdateCampaignNodeDocument} from "generated/graphql";
-import {Grid, GridItem, Text, useTheme} from "@chakra-ui/react";
-
+import {
+    applyNodeChanges,
+    Background,
+    Controls,
+    Node,
+    NodeChange,
+    Position,
+    ReactFlow,
+    PanelPosition,
+} from "reactflow";
 import "reactflow/dist/style.css";
-import {useCallback, useEffect, useState} from "react";
 
-export interface CampaignPageProps {
-}
+import { REACT_FLOW_NODE_TYPES, toFlowNode } from "lib/campaign/flow";
+import {
+    CampaignDocument,
+    UpdateCampaignNodeDocument,
+} from "generated/graphql";
+
+import {
+    Button,
+    Code,
+    Grid,
+    GridItem,
+    IconButton,
+    LightMode,
+    Text,
+    useTheme,
+} from "@chakra-ui/react";
+import { AddIcon } from "@chakra-ui/icons";
+
+import { useCallback, useEffect, useState } from "react";
+import StyledMinimap from "components/campaign/flow/StyledMinimap";
+
+export interface CampaignPageProps {}
 
 const CampaignPage = (props: CampaignPageProps) => {
     const router = useRouter();
     const theme = useTheme();
-    const {id: campaignId} = router.query;
+    const { id: campaignId } = router.query;
 
-
-    const {data, loading, error} = useQuery(CampaignDocument, {
-        variables: {id: campaignId as string},
+    const { data, loading, error } = useQuery(CampaignDocument, {
+        variables: { id: campaignId as string },
         skip: campaignId === undefined,
     });
     let updateTimeout: number | undefined = undefined;
     const [updateNode, {}] = useMutation(UpdateCampaignNodeDocument);
 
-    const [nodes, setNodes] = useState<Node[]>([])
-    const onNodesChange = useCallback(
-        (changes: NodeChange[]) => {
-            if (updateTimeout !== undefined) {
-                clearTimeout(updateTimeout);
-            }
+    const [nodes, setNodes] = useState<Node[]>([]);
+    const onNodesChange = useCallback((changes: NodeChange[]) => {
+        if (updateTimeout !== undefined) {
+            clearTimeout(updateTimeout);
+        }
+
+        setNodes((nds) => {
+            const changedNodes = applyNodeChanges(changes, nds);
 
             updateTimeout = setTimeout(() => {
-                console.log("TIMER UPDATING ")
-                nodes.forEach((node) => {
+                changedNodes.forEach((node) => {
                     updateNode({
                         variables: {
                             id: node.id,
                             input: {
-                                position: node.position
-                            }
-                        }
-                    }).then(console.log).catch(console.log)
-                })
-            }, 1000) as unknown as number;
+                                position: node.position,
+                            },
+                        },
+                        // context: {
+                        //     fetchOptions: {
+                        //         signal: abortController.signal,
+                        //     },
+                        // },
+                        optimisticResponse: (vars) => {
+                            return {
+                                campaignNodeUpdate: {
+                                    ...node.data,
 
-            setNodes((nds) => applyNodeChanges(changes, nds));
-        },
-        []
-    );
+                                    id: node.id,
+                                    __typename: "CampaignNode",
+
+                                    position: node.position,
+                                },
+                            };
+                        },
+                    })
+                        .then(console.log)
+                        .catch(console.log);
+                });
+            }, 2000) as unknown as number;
+
+            return changedNodes;
+        });
+    }, []);
 
     useEffect(() => {
         if (!data) {
-            return
+            return;
         }
-        const nextNodes = data.campaign.campaignNodes.map((campaignNode, index) => {
-            return toFlowNode(campaignNode);
-        })
+        const nextNodes = data.campaign.campaignNodes.map(
+            (campaignNode, index) => {
+                return toFlowNode(campaignNode);
+            }
+        );
 
-        setNodes(nextNodes)
-    }, [data])
-
+        setNodes(nextNodes);
+    }, [data]);
 
     const edges =
         data?.campaign.campaignNodes
@@ -70,9 +113,9 @@ const CampaignPage = (props: CampaignPageProps) => {
                     const source = transition.from.id;
                     const target = transition.to.id;
 
-                    // This will remove duplicates from the graph response..
+                    // This will remove duplicates from the graph response.
                     if (campaignNode.id !== source) {
-                        return undefined
+                        return undefined;
                     }
 
                     return {
@@ -95,11 +138,13 @@ const CampaignPage = (props: CampaignPageProps) => {
         >
             <GridItem colSpan={1}>
                 <Text>id: {campaignId}</Text>
-                <Text>data: {JSON.stringify(data)}</Text>
+                <Text>
+                    data: <Code>{JSON.stringify(data)}</Code>
+                </Text>
             </GridItem>
             <GridItem colSpan={1}>
                 <ReactFlow
-                    style={{border: "5px solid red", fontSize: "6px"}}
+                    style={{ border: "5px solid red", fontSize: "6px" }}
                     nodes={nodes}
                     edges={edges}
                     fitView
@@ -108,9 +153,24 @@ const CampaignPage = (props: CampaignPageProps) => {
                     // onEdgesChange={onEdgesChange}
                     // onConnect={onConnect}
                 >
-                    <MiniMap position={"bottom-right"}/>
-                    <Controls/>
-                    <Background/>
+                    <StyledMinimap />
+                    <Controls
+                        style={{ marginRight: 240 }}
+                        position={"bottom-right"}
+                    />
+                    <Background />
+                    <LightMode>
+                        <IconButton
+                            colorScheme="primary"
+                            aria-label="Add Node"
+                            size="lg"
+                            pos={"absolute"}
+                            isRound
+                            bottom={0}
+                            m={4}
+                            icon={<AddIcon />}
+                        />
+                    </LightMode>
                 </ReactFlow>
             </GridItem>
         </Grid>

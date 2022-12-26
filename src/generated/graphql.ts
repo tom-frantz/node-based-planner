@@ -177,13 +177,13 @@ export enum PlayerType {
 
 export type Position = {
   __typename?: 'Position';
-  x: Scalars['Int'];
-  y: Scalars['Int'];
+  x: Scalars['Float'];
+  y: Scalars['Float'];
 };
 
 export type PositionInput = {
-  x?: InputMaybe<Scalars['Int']>;
-  y?: InputMaybe<Scalars['Int']>;
+  x?: InputMaybe<Scalars['Float']>;
+  y?: InputMaybe<Scalars['Float']>;
 };
 
 export type Query = {

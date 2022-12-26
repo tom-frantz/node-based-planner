@@ -23,8 +23,8 @@ type CampaignNode struct {
 
 	Label       string   `json:"label" bun:"label,notnull"`
 	Position    Position `json:"position" bun:"-"`
-	PositionX   int      `bun:"position_x,notnull"`
-	PositionY   int      `bun:"position_x,notnull"`
+	PositionX   float64  `bun:"position_x,notnull,type:double precision"`
+	PositionY   float64  `bun:"position_y,notnull,type:double precision"`
 	Description *string  `json:"description" bun:"description"`
 	Notes       []string `json:"notes" bun:"notes,array"`
 }
@@ -69,7 +69,6 @@ func (campaignNode *CampaignNode) CreateFromInput(simpleInput interface{}, ctx c
 
 func (campaignNode *CampaignNode) ApplyInput(simpleInput interface{}, ctx context.Context, query *bun.UpdateQuery) (err error) {
 	input := simpleInput.(*CampaignNodeInput)
-	println(input.Position)
 
 	if input.Title != nil && *input.Title != "" {
 		campaignNode.Title = *input.Title
@@ -97,7 +96,7 @@ func (campaignNode *CampaignNode) ApplyInput(simpleInput interface{}, ctx contex
 	}
 
 	if input.Position.Y != nil {
-		campaignNode.PositionX = *input.Position.X
+		campaignNode.PositionY = *input.Position.Y
 	}
 
 	return

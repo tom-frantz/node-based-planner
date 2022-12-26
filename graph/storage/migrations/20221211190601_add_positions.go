@@ -10,8 +10,8 @@ func init() {
 	Migrations.MustRegister(func(ctx context.Context, db *bun.DB) error {
 		fmt.Print(" [up migration] ")
 
-		db.ExecContext(ctx, "alter table campaign_nodes add column position_x int NOT NULL default 0")
-		db.ExecContext(ctx, "alter table campaign_nodes add column position_y int NOT NULL default 0")
+		db.ExecContext(ctx, "alter table campaign_nodes add column position_x double precision NOT NULL default 0")
+		db.ExecContext(ctx, "alter table campaign_nodes add column position_y double precision NOT NULL default 0")
 
 		return nil
 	}, func(ctx context.Context, db *bun.DB) error {

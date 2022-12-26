@@ -9,6 +9,10 @@ import client from "apollo/client";
 import theme from "theme/theme";
 import { AuthProvider } from "../auth/AuthContext";
 
+import "@fontsource/della-respira";
+import "@fontsource/megrim";
+import "@fontsource/quattrocento";
+
 export default function App({ Component, pageProps }: AppProps) {
     return (
         <AuthProvider>

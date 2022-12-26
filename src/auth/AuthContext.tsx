@@ -100,6 +100,7 @@ export const useRedirectAuthenticated = (to?: string) => {
     const { isLoggedIn } = useAuth();
 
     useEffect(() => {
+        console.log(isLoggedIn, router);
         if (isLoggedIn && router) {
             router.push(to ?? "home");
         }

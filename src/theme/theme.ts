@@ -1,4 +1,9 @@
-import { extendTheme, ThemeConfig } from "@chakra-ui/react";
+import {
+    defineStyle,
+    defineStyleConfig,
+    extendTheme,
+    ThemeConfig,
+} from "@chakra-ui/react";
 
 const colors = {
     primary: {
@@ -25,5 +30,24 @@ const config: ThemeConfig = {
     initialColorMode: "system",
     useSystemColorMode: true,
 };
-const theme = extendTheme({ colors, config });
+const fonts = {
+    heading: `'Della Respira', serif`,
+    // heading: `megrim, serif`
+    body: `'Quattrocento', serif`,
+};
+
+const theme = extendTheme({
+    colors,
+    config,
+    fonts,
+    components: {
+        Heading: {
+            variants: {
+                subheading: {
+                    fontFamily: "Megrim, sans-serif",
+                },
+            },
+        },
+    },
+});
 export default theme;

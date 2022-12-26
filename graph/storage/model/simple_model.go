@@ -35,9 +35,10 @@ func (simpleModel *SimpleModel) SelectByPk(ctx context.Context, db *bun.DB) (err
 }
 
 func (simpleModel *SimpleModel) Update(input interface{}, ctx context.Context, db *bun.DB) (err error) {
-	query := db.NewUpdate().Model(simpleModel.Model).WherePK()
+	model := simpleModel.Model
+	query := db.NewUpdate().Model(model).WherePK()
 
-	err = simpleModel.Model.ApplyInput(input, ctx, query)
+	err = model.ApplyInput(input, ctx, query)
 	if err != nil {
 		return err
 	}
